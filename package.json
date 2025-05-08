@@ -43,10 +43,12 @@
   "homepage": "https://github.com/yourusername/gnss.js#readme",
   "devDependencies": {
     "@eslint/config-array": "^0.20.0",
+    "@eslint/js": "^9.26.0",
     "@eslint/object-schema": "^2.1.6",
     "@rollup/plugin-terser": "^0.4.3",
     "eslint": "^9.26.0",
     "glob": "^11.0.2",
+    "globals": "^16.1.0",
     "jsdoc": "^4.0.2",
     "jsdoc-to-markdown": "^9.1.1",
     "rimraf": "^6.0.1",

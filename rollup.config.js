@@ -25,6 +25,7 @@ export default [
       name: 'GnssModule',
       banner,
       sourcemap: true,
+      exports: 'named',
       plugins: [terser]
     }
   },
@@ -36,7 +37,8 @@ export default [
       format: 'umd',
       name: 'GnssModule',
       banner,
-      sourcemap: true
+      sourcemap: true,
+      exports: 'named'
     }
   },
   // ESM build for modern environments
@@ -46,7 +48,8 @@ export default [
       file: pkg.module,
       format: 'esm',
       banner,
-      sourcemap: true
+      sourcemap: true,
+      exports: 'named'
     }
   }
 ];
