@@ -7,14 +7,27 @@
 export class RtkSettings {
   /**
    * Create an RTK settings component
-   * @param {Object} gnssManager - GNSS manager instance
-   * @param {HTMLElement} container - Container element for the settings UI
+   * @param {Object} options - Configuration options
+   * @param {EventEmitter} options.events - Event emitter for communication
+   * @param {Settings} options.settings - Settings manager
+   * @param {string} options.selector - CSS selector for the container element
    */
-  constructor(gnssManager, container) {
-    this.gnss = gnssManager;
-    this.container = container;
+  constructor(options = {}) {
+    this.events = options.events;
+    this.settings = options.settings;
     this.isConnected = false;
     this.isConnecting = false;
+    
+    // Find container element if selector provided
+    if (options.selector) {
+      this.container = document.querySelector(options.selector);
+    }
+    
+    // If no container, don't initialize UI
+    if (!this.container) {
+      console.warn('RtkSettings: No container element found. UI will not be initialized.');
+      return;
+    }
     
     // Cache frequently used elements
     this.elements = {};
@@ -591,25 +604,38 @@ export class RtkSettings {
    * Set up UI event listeners
    */
   setupEventListeners() {
-    if (!this.elements) return;
+    if (!this.elements) {
+      console.warn('RtkSettings: No UI elements found. Event listeners not set up.');
+      return;
+    }
+    
+    // Safely add event listener to an element if it exists
+    const safeAddListener = (elementKey, eventType, handler) => {
+      const element = this.elements[elementKey];
+      if (element) {
+        element.addEventListener(eventType, handler);
+      } else {
+        console.warn(`RtkSettings: Element ${elementKey} not found`);
+      }
+    };
     
     // Enable/disable toggle
-    this.elements.enableToggle.addEventListener('change', () => {
+    safeAddListener('enableToggle', 'change', () => {
       this.updateFormState();
     });
     
     // Connect button
-    this.elements.connectButton.addEventListener('click', () => {
+    safeAddListener('connectButton', 'click', () => {
       this.connect();
     });
     
     // Disconnect button
-    this.elements.disconnectButton.addEventListener('click', () => {
+    safeAddListener('disconnectButton', 'click', () => {
       this.disconnect();
     });
     
     // Save settings button
-    this.elements.saveButton.addEventListener('click', () => {
+    safeAddListener('saveButton', 'click', () => {
       this.saveConfig();
     });
   }
@@ -618,17 +644,22 @@ export class RtkSettings {
    * Register event listeners for GNSS events
    */
   registerEventListeners() {
+    if (!this.events) {
+      console.warn('RtkSettings: No events emitter provided. Settings will not update.');
+      return;
+    }
+    
     // Connection status change events
-    this.gnss.events.on('ntrip:connecting', this.handleConnecting.bind(this));
-    this.gnss.events.on('ntrip:connected', this.handleConnected.bind(this));
-    this.gnss.events.on('ntrip:disconnected', this.handleDisconnected.bind(this));
-    this.gnss.events.on('ntrip:error', this.handleError.bind(this));
+    this.events.on('ntrip:connecting', this.handleConnecting.bind(this));
+    this.events.on('ntrip:connected', this.handleConnected.bind(this));
+    this.events.on('ntrip:disconnected', this.handleDisconnected.bind(this));
+    this.events.on('ntrip:error', this.handleError.bind(this));
     
     // Data statistics
-    this.gnss.events.on('ntrip:rtcm', this.handleRtcmData.bind(this));
+    this.events.on('ntrip:rtcm', this.handleRtcmData.bind(this));
     
     // Handle position updates
-    this.gnss.events.on('position', this.handlePosition.bind(this));
+    this.events.on('position', this.handlePosition.bind(this));
     
     // Update status periodically
     setInterval(() => {
@@ -845,62 +876,82 @@ export class RtkSettings {
   }
 
   /**
-   * Load saved configuration from GNSS settings
+   * Load saved configuration from settings
    */
   loadSavedConfig() {
-    if (!this.gnss || !this.gnss.settings || !this.gnss.settings.rtk) return;
+    if (!this.settings || !this.settings.rtk || !this.elements) return;
     
-    const rtkSettings = this.gnss.settings.rtk;
+    const rtkSettings = this.settings.rtk;
+    
+    // Safely set value if the element exists
+    const safeSetValue = (elementKey, value) => {
+      const element = this.elements[elementKey];
+      if (element) {
+        if (typeof element.checked !== 'undefined') {
+          element.checked = Boolean(value);
+        } else {
+          element.value = value || '';
+        }
+      }
+    };
     
     // Update UI elements
-    this.elements.enableToggle.checked = rtkSettings.enabled;
-    this.elements.connectionMethod.value = rtkSettings.connectionMode || 'auto';
-    this.elements.casterHost.value = rtkSettings.casterHost || '';
-    this.elements.casterPort.value = rtkSettings.casterPort || 2101;
-    this.elements.mountpoint.value = rtkSettings.mountpoint || '';
-    this.elements.username.value = rtkSettings.username || '';
+    safeSetValue('enableToggle', rtkSettings.enabled);
+    safeSetValue('connectionMethod', rtkSettings.connectionMode || 'auto');
+    safeSetValue('casterHost', rtkSettings.casterHost || '');
+    safeSetValue('casterPort', rtkSettings.casterPort || 2101);
+    safeSetValue('mountpoint', rtkSettings.mountpoint || '');
+    safeSetValue('username', rtkSettings.username || '');
     // We don't restore password for security reasons
-    this.elements.sendGga.checked = rtkSettings.sendGga !== undefined ? rtkSettings.sendGga : true;
-    this.elements.ggaInterval.value = rtkSettings.ggaUpdateInterval || 10;
-    this.elements.autoReconnect.checked = rtkSettings.autoReconnect !== undefined ? rtkSettings.autoReconnect : true;
+    safeSetValue('sendGga', rtkSettings.sendGga !== undefined ? rtkSettings.sendGga : true);
+    safeSetValue('ggaInterval', rtkSettings.ggaUpdateInterval || 10);
+    safeSetValue('autoReconnect', rtkSettings.autoReconnect !== undefined ? rtkSettings.autoReconnect : true);
     
     // Update form state
     this.updateFormState();
   }
 
   /**
-   * Save configuration to GNSS settings
+   * Save configuration to settings
    */
   saveConfig() {
-    if (!this.gnss || !this.gnss.settings) return;
+    if (!this.settings || !this.elements) return;
+    
+    // Safely get value from an element if it exists
+    const safeGetValue = (elementKey, defaultValue = '') => {
+      const element = this.elements[elementKey];
+      if (!element) return defaultValue;
+      
+      if (typeof element.checked !== 'undefined') {
+        return element.checked;
+      } else {
+        return element.value || defaultValue;
+      }
+    };
     
     // Get values from form
     const config = {
-      enabled: this.elements.enableToggle.checked,
-      connectionMode: this.elements.connectionMethod.value,
-      casterHost: this.elements.casterHost.value,
-      casterPort: parseInt(this.elements.casterPort.value) || 2101,
-      mountpoint: this.elements.mountpoint.value,
-      username: this.elements.username.value,
-      password: this.elements.password.value,
-      sendGga: this.elements.sendGga.checked,
-      ggaUpdateInterval: parseInt(this.elements.ggaInterval.value) || 10,
-      autoReconnect: this.elements.autoReconnect.checked
+      enabled: safeGetValue('enableToggle', false),
+      connectionMode: safeGetValue('connectionMethod', 'auto'),
+      casterHost: safeGetValue('casterHost', ''),
+      casterPort: parseInt(safeGetValue('casterPort', '2101')) || 2101,
+      mountpoint: safeGetValue('mountpoint', ''),
+      username: safeGetValue('username', ''),
+      password: safeGetValue('password', ''),
+      sendGga: safeGetValue('sendGga', true),
+      ggaUpdateInterval: parseInt(safeGetValue('ggaInterval', '10')) || 10,
+      autoReconnect: safeGetValue('autoReconnect', true)
     };
     
     // Save to settings
-    this.gnss.settings.rtk = config;
-    this.gnss.settings.save();
+    if (this.settings) {
+      this.settings.rtk = config;
+      this.settings.save();
+    }
     
-    // Update NTRIP client if running
-    if (this.gnss.ntripClient) {
-      // Update auto-reconnect setting
-      this.gnss.ntripClient.setAutoReconnect(config.autoReconnect);
-      
-      // If connected, update GGA interval
-      if (this.isConnected) {
-        this.gnss.ntripClient.config.ggaUpdateInterval = config.ggaUpdateInterval;
-      }
+    // Emit settings update event
+    if (this.events) {
+      this.events.emit('rtk:settings:update', config);
     }
     
     // If RTK is disabled but we're connected, disconnect
@@ -939,8 +990,10 @@ export class RtkSettings {
       return;
     }
     
-    // Connect via GNSS manager
-    this.gnss.connectToNtrip(config);
+    // Emit connect event
+    if (this.events) {
+      this.events.emit('rtk:connect', config);
+    }
   }
 
   /**
@@ -949,8 +1002,10 @@ export class RtkSettings {
   disconnect() {
     if (!this.isConnected) return;
     
-    // Disconnect via GNSS manager
-    this.gnss.disconnectFromNtrip();
+    // Emit disconnect event
+    if (this.events) {
+      this.events.emit('rtk:disconnect');
+    }
   }
 }
 

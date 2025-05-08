@@ -1170,4 +1170,4 @@ export class BluetoothHandler extends ConnectionHandler {
   }
 }
 
-export default BluetoothConnectionHandler;
+export default BluetoothHandler;

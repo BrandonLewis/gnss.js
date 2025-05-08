@@ -448,4 +448,4 @@ export class SerialHandler extends ConnectionHandler {
   }
 }
 
-export default SerialConnectionHandler;
+export default SerialHandler;

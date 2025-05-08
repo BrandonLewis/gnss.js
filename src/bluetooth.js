@@ -1157,4 +1157,4 @@ export class BluetoothConnection {
   }
 }
 
-export default BluetoothManager;
+export default BluetoothConnection;

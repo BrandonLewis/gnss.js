@@ -41,10 +41,22 @@ class GnssModule {
     };
     
     // Initialize connection manager
-    this.connectionManager = new ConnectionManager({
-      events: this.events,
+    this.connectionManager = new ConnectionManager(this.events, {
+      debug: this.debugSettings,
       settings: this.settings
     });
+    
+    // Create and register connection handlers
+    this.bluetoothHandler = new BluetoothHandler(this.events, {
+      debug: this.debugSettings
+    });
+    this.serialHandler = new SerialHandler(this.events, {
+      debug: this.debugSettings
+    });
+    
+    // Register connection handlers with the connection manager
+    this.connectionManager.registerConnectionMethod(this.bluetoothHandler);
+    this.connectionManager.registerConnectionMethod(this.serialHandler);
     
     // Initialize NMEA parser
     this.nmeaParser = new NmeaParser({

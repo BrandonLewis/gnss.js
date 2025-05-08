@@ -319,4 +319,4 @@ export class Settings {
   }
 }
 
-export default SettingsManager;
+export default Settings;

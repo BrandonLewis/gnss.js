@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>gnss.js Connection Diagnostics</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem;
+      line-height: 1.5;
+    }
+    
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    
+    .panel {
+      flex: 1;
+      min-width: 450px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    h1, h2, h3 {
+      margin-top: 0;
+      color: #333;
+    }
+    
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px 5px 5px 0;
+      font-size: 14px;
+    }
+    
+    button:hover {
+      background-color: #45a049;
+    }
+    
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    
+    .warning {
+      background-color: #fff3cd;
+      color: #856404;
+      padding: 10px;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+    
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+      padding: 10px;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+    
+    pre {
+      background-color: #f5f5f5;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-family: monospace;
+      margin: 10px 0;
+    }
+    
+    .device-list, .characteristic-list {
+      list-style: none;
+      padding: 0;
+      margin: 10px 0;
+    }
+    
+    .device-item, .characteristic-item {
+      padding: 8px;
+      margin: 5px 0;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    .device-item:hover, .characteristic-item:hover {
+      background-color: #f0f0f0;
+    }
+    
+    .device-item.selected, .characteristic-item.selected {
+      background-color: #e0f7fa;
+      border-color: #00bcd4;
+    }
+    
+    .flex-container {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    
+    .flex-container > div {
+      flex: 1;
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .data-view {
+      height: 200px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 10px;
+      font-family: monospace;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    table, th, td {
+      border: 1px solid #ddd;
+    }
+    
+    th, td {
+      padding: 8px;
+      text-align: left;
+    }
+    
+    th {
+      background-color: #f2f2f2;
+    }
+    
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+  </style>
+</head>
+<body>
+  <h1>gnss.js Connection Diagnostics</h1>
+  
+  <div class="container">
+    <!-- Web Serial Panel -->
+    <div class="panel">
+      <h2>Web Serial API</h2>
+      <div id="serialSupport"></div>
+      
+      <button id="listSerialPorts">List Available Ports</button>
+      <button id="requestSerialPort">Request New Port</button>
+      <button id="disconnectSerial" disabled>Disconnect</button>
+      
+      <h3>Available Serial Ports</h3>
+      <ul id="serialPortsList" class="device-list"></ul>
+      
+      <h3>Selected Port Info</h3>
+      <div id="serialPortInfo">No port selected</div>
+      
+      <h3>Serial Data</h3>
+      <div class="flex-container">
+        <div>
+          <label for="serialBaudRate">Baud Rate:</label>
+          <select id="serialBaudRate">
+            <option value="9600">9600</option>
+            <option value="19200">19200</option>
+            <option value="38400">38400</option>
+            <option value="57600">57600</option>
+            <option value="115200" selected>115200</option>
+            <option value="230400">230400</option>
+            <option value="460800">460800</option>
+            <option value="921600">921600</option>
+          </select>
+          <button id="connectSerial" disabled>Connect</button>
+        </div>
+        <div>
+          <label for="serialDataFormat">Data Format:</label>
+          <select id="serialDataFormat">
+            <option value="text">Text</option>
+            <option value="hex">Hex</option>
+            <option value="both">Both</option>
+          </select>
+          <button id="clearSerialData">Clear</button>
+        </div>
+      </div>
+      <div id="serialData" class="data-view"></div>
+    </div>
+    
+    <!-- Web Bluetooth Panel -->
+    <div class="panel">
+      <h2>Web Bluetooth API</h2>
+      <div id="bluetoothSupport"></div>
+      
+      <button id="listBluetoothDevices">List Paired Devices</button>
+      <button id="scanBluetoothDevices">Scan for Devices</button>
+      <button id="disconnectBluetooth" disabled>Disconnect</button>
+      
+      <h3>Available Bluetooth Devices</h3>
+      <ul id="bluetoothDevicesList" class="device-list"></ul>
+      
+      <h3>Selected Device Info</h3>
+      <div id="bluetoothDeviceInfo">No device selected</div>
+      
+      <div id="deviceTabs">
+        <div>
+          <button class="tab-button active" data-tab="services">Services</button>
+          <button class="tab-button" data-tab="characteristics">Characteristics</button>
+          <button class="tab-button" data-tab="data">Data</button>
+        </div>
+        
+        <div id="services" class="tab-content active">
+          <h3>Available Services</h3>
+          <ul id="servicesList" class="device-list"></ul>
+        </div>
+        
+        <div id="characteristics" class="tab-content">
+          <h3>Available Characteristics</h3>
+          <ul id="characteristicsList" class="characteristic-list"></ul>
+          
+          <div id="characteristicControls">
+            <h4>Characteristic Actions</h4>
+            <div>
+              <button id="readCharacteristic" disabled>Read Value</button>
+              <button id="startNotifications" disabled>Start Notifications</button>
+              <button id="stopNotifications" disabled>Stop Notifications</button>
+            </div>
+            <div>
+              <textarea id="writeValue" placeholder="Value to write (hex or text)" rows="2"></textarea>
+              <button id="writeCharacteristic" disabled>Write Value</button>
+              <select id="writeType">
+                <option value="write">Write</option>
+                <option value="writeWithoutResponse">Write Without Response</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <div id="data" class="tab-content">
+          <h3>Bluetooth Data</h3>
+          <div class="flex-container">
+            <div>
+              <label for="bluetoothDataFormat">Data Format:</label>
+              <select id="bluetoothDataFormat">
+                <option value="text">Text</option>
+                <option value="hex">Hex</option>
+                <option value="both">Both</option>
+              </select>
+              <button id="clearBluetoothData">Clear</button>
+            </div>
+          </div>
+          <div id="bluetoothData" class="data-view"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script type="module">
+    // Check Web Serial API support
+    const serialSupportEl = document.getElementById('serialSupport');
+    if ('serial' in navigator) {
+      serialSupportEl.innerHTML = '<div style="color: green">✓ Web Serial API is supported in this browser</div>';
+    } else {
+      serialSupportEl.innerHTML = '<div class="error">✗ Web Serial API is not supported in this browser</div>';
+      document.getElementById('listSerialPorts').disabled = true;
+      document.getElementById('requestSerialPort').disabled = true;
+    }
+    
+    // Check Web Bluetooth API support
+    const bluetoothSupportEl = document.getElementById('bluetoothSupport');
+    if ('bluetooth' in navigator) {
+      let getDevicesSupported = typeof navigator.bluetooth.getDevices === 'function';
+      
+      bluetoothSupportEl.innerHTML = '<div style="color: green">✓ Web Bluetooth API is supported in this browser</div>';
+      
+      if (!getDevicesSupported) {
+        bluetoothSupportEl.innerHTML += '<div class="warning">⚠️ The getDevices() method is not supported in this browser. The "List Paired Devices" button will not work, but you can still scan for new devices.</div>';
+        document.getElementById('listBluetoothDevices').disabled = true;
+      }
+    } else {
+      bluetoothSupportEl.innerHTML = '<div class="error">✗ Web Bluetooth API is not supported in this browser</div>';
+      document.getElementById('listBluetoothDevices').disabled = true;
+      document.getElementById('scanBluetoothDevices').disabled = true;
+    }
+    
+    // Variables for serial port handling
+    let serialPort = null;
+    let serialReader = null;
+    let serialReadLoopRunning = false;
+    
+    // Variables for bluetooth device handling
+    let bluetoothDevice = null;
+    let bluetoothServer = null;
+    let notificationCharacteristic = null;
+    let selectedCharacteristic = null;
+    
+    // Elements
+    const serialPortsList = document.getElementById('serialPortsList');
+    const serialPortInfo = document.getElementById('serialPortInfo');
+    const serialData = document.getElementById('serialData');
+    const serialBaudRate = document.getElementById('serialBaudRate');
+    const serialDataFormat = document.getElementById('serialDataFormat');
+    const connectSerialBtn = document.getElementById('connectSerial');
+    const disconnectSerialBtn = document.getElementById('disconnectSerial');
+    const clearSerialDataBtn = document.getElementById('clearSerialData');
+    
+    const bluetoothDevicesList = document.getElementById('bluetoothDevicesList');
+    const bluetoothDeviceInfo = document.getElementById('bluetoothDeviceInfo');
+    const servicesList = document.getElementById('servicesList');
+    const characteristicsList = document.getElementById('characteristicsList');
+    const bluetoothData = document.getElementById('bluetoothData');
+    const bluetoothDataFormat = document.getElementById('bluetoothDataFormat');
+    const disconnectBluetoothBtn = document.getElementById('disconnectBluetooth');
+    const clearBluetoothDataBtn = document.getElementById('clearBluetoothData');
+    
+    const readCharacteristicBtn = document.getElementById('readCharacteristic');
+    const startNotificationsBtn = document.getElementById('startNotifications');
+    const stopNotificationsBtn = document.getElementById('stopNotifications');
+    const writeCharacteristicBtn = document.getElementById('writeCharacteristic');
+    const writeValueTextarea = document.getElementById('writeValue');
+    const writeTypeSelect = document.getElementById('writeType');
+    
+    // Tab handling
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const tabId = button.dataset.tab;
+        
+        // Hide all tabs
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        tabContents.forEach(content => content.classList.remove('active'));
+        
+        // Show selected tab
+        button.classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+      });
+    });
+    
+    // Helper functions
+    function appendToDataView(element, text, type = 'text') {
+      const timestamp = new Date().toLocaleTimeString();
+      const entry = document.createElement('div');
+      
+      if (type === 'info') {
+        entry.innerHTML = `<span style="color: blue">[${timestamp}] ℹ️ ${text}</span>`;
+      } else if (type === 'error') {
+        entry.innerHTML = `<span style="color: red">[${timestamp}] ❌ ${text}</span>`;
+      } else if (type === 'success') {
+        entry.innerHTML = `<span style="color: green">[${timestamp}] ✅ ${text}</span>`;
+      } else {
+        entry.innerHTML = `<span style="color: #333">[${timestamp}] ${text}</span>`;
+      }
+      
+      element.appendChild(entry);
+      element.scrollTop = element.scrollHeight;
+    }
+    
+    function formatBuffer(buffer, format) {
+      const array = new Uint8Array(buffer);
+      
+      // Text format
+      const textDecoder = new TextDecoder('utf-8');
+      const text = textDecoder.decode(array);
+      
+      // Hex format
+      const hex = Array.from(array)
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join(' ');
+      
+      if (format === 'text') {
+        return text;
+      } else if (format === 'hex') {
+        return hex;
+      } else {
+        return `Text: ${text}\nHex: ${hex}`;
+      }
+    }
+    
+    // Serial Port Functions
+    async function listSerialPorts() {
+      try {
+        serialPortsList.innerHTML = '';
+        
+        const ports = await navigator.serial.getPorts();
+        
+        if (ports.length === 0) {
+          serialPortsList.innerHTML = '<li>No ports found. Click "Request New Port" to select a port.</li>';
+          return;
+        }
+        
+        ports.forEach((port, index) => {
+          const listItem = document.createElement('li');
+          listItem.classList.add('device-item');
+          listItem.textContent = `Serial Port ${index + 1}`;
+          listItem.addEventListener('click', () => selectSerialPort(port, listItem));
+          serialPortsList.appendChild(listItem);
+        });
+      } catch (error) {
+        appendToDataView(serialData, `Error listing ports: ${error.message}`, 'error');
+        console.error('Error listing ports:', error);
+      }
+    }
+    
+    async function requestSerialPort() {
+      try {
+        const port = await navigator.serial.requestPort();
+        
+        // Check if port is already in the list
+        const ports = await navigator.serial.getPorts();
+        const portIndex = ports.indexOf(port);
+        
+        // If port is new, add it to the list
+        if (portIndex === -1) {
+          const listItem = document.createElement('li');
+          listItem.classList.add('device-item');
+          listItem.textContent = `Serial Port ${ports.length + 1}`;
+          listItem.addEventListener('click', () => selectSerialPort(port, listItem));
+          serialPortsList.appendChild(listItem);
+        }
+        
+        // Select the port
+        const listItems = serialPortsList.querySelectorAll('.device-item');
+        selectSerialPort(port, listItems[portIndex] || listItems[listItems.length - 1]);
+      } catch (error) {
+        if (error.name === 'NotFoundError') {
+          appendToDataView(serialData, 'No devices selected', 'info');
+        } else {
+          appendToDataView(serialData, `Error requesting port: ${error.message}`, 'error');
+          console.error('Error requesting port:', error);
+        }
+      }
+    }
+    
+    function selectSerialPort(port, listItem) {
+      // Clear selection from all items
+      serialPortsList.querySelectorAll('.device-item').forEach(item => {
+        item.classList.remove('selected');
+      });
+      
+      // Select the current item
+      listItem.classList.add('selected');
+      
+      // Store the port
+      serialPort = port;
+      
+      // Update port info
+      serialPortInfo.innerHTML = `<div>Port selected. Click "Connect" to open the port.</div>`;
+      
+      // Enable connect button
+      connectSerialBtn.disabled = false;
+    }
+    
+    async function connectSerial() {
+      if (!serialPort) {
+        appendToDataView(serialData, 'No port selected', 'error');
+        return;
+      }
+      
+      try {
+        // Configure and open the port
+        const baudRate = parseInt(serialBaudRate.value, 10);
+        
+        await serialPort.open({
+          baudRate,
+          dataBits: 8,
+          stopBits: 1,
+          parity: 'none',
+          bufferSize: 8192,
+          flowControl: 'none'
+        });
+        
+        // Update UI
+        appendToDataView(serialData, `Connected at ${baudRate} baud`, 'success');
+        connectSerialBtn.disabled = true;
+        disconnectSerialBtn.disabled = false;
+        
+        // Update port info
+        const portInfo = {
+          usbVendorId: serialPort.getInfo().usbVendorId,
+          usbProductId: serialPort.getInfo().usbProductId,
+          baudRate: baudRate,
+          status: 'Connected'
+        };
+        
+        serialPortInfo.innerHTML = `
+          <table>
+            <tr><th>Property</th><th>Value</th></tr>
+            <tr><td>USB Vendor ID</td><td>${portInfo.usbVendorId ? '0x' + portInfo.usbVendorId.toString(16).padStart(4, '0') : 'N/A'}</td></tr>
+            <tr><td>USB Product ID</td><td>${portInfo.usbProductId ? '0x' + portInfo.usbProductId.toString(16).padStart(4, '0') : 'N/A'}</td></tr>
+            <tr><td>Baud Rate</td><td>${portInfo.baudRate}</td></tr>
+            <tr><td>Status</td><td>${portInfo.status}</td></tr>
+          </table>
+        `;
+        
+        // Start reading from the port
+        readSerialData();
+      } catch (error) {
+        appendToDataView(serialData, `Error connecting: ${error.message}`, 'error');
+        console.error('Error connecting to serial port:', error);
+      }
+    }
+    
+    async function disconnectSerial() {
+      try {
+        // Stop the read loop
+        serialReadLoopRunning = false;
+        
+        // Close the reader
+        if (serialReader) {
+          await serialReader.cancel();
+          serialReader = null;
+        }
+        
+        // Close the port
+        if (serialPort && serialPort.readable) {
+          await serialPort.close();
+        }
+        
+        // Update UI
+        appendToDataView(serialData, 'Disconnected', 'info');
+        connectSerialBtn.disabled = false;
+        disconnectSerialBtn.disabled = true;
+        
+        // Update port info
+        serialPortInfo.innerHTML = `<div>Port disconnected. Click "Connect" to reopen.</div>`;
+      } catch (error) {
+        appendToDataView(serialData, `Error disconnecting: ${error.message}`, 'error');
+        console.error('Error disconnecting from serial port:', error);
+      }
+    }
+    
+    async function readSerialData() {
+      if (!serialPort || !serialPort.readable) {
+        appendToDataView(serialData, 'Port is not readable', 'error');
+        return;
+      }
+      
+      serialReadLoopRunning = true;
+      
+      try {
+        serialReader = serialPort.readable.getReader();
+        
+        while (serialReadLoopRunning) {
+          const { value, done } = await serialReader.read();
+          
+          if (done) {
+            appendToDataView(serialData, 'Reader closed', 'info');
+            break;
+          }
+          
+          // Process the received data
+          if (value) {
+            const formattedData = formatBuffer(value.buffer, serialDataFormat.value);
+            appendToDataView(serialData, formattedData);
+          }
+        }
+        
+        serialReader.releaseLock();
+      } catch (error) {
+        appendToDataView(serialData, `Error reading: ${error.message}`, 'error');
+        console.error('Error reading from serial port:', error);
+      } finally {
+        if (serialReader) {
+          try {
+            serialReader.releaseLock();
+          } catch (e) {
+            console.error('Error releasing lock:', e);
+          }
+        }
+      }
+    }
+    
+    // Bluetooth Functions
+    async function listBluetoothDevices() {
+      try {
+        bluetoothDevicesList.innerHTML = '';
+        
+        // Check if getDevices is supported
+        if (typeof navigator.bluetooth.getDevices !== 'function') {
+          bluetoothDevicesList.innerHTML = '<li>The getDevices() method is not supported in this browser. Use "Scan for Devices" instead.</li>';
+          return;
+        }
+        
+        const devices = await navigator.bluetooth.getDevices();
+        
+        if (devices.length === 0) {
+          bluetoothDevicesList.innerHTML = '<li>No paired devices found. Click "Scan for Devices" to discover new devices.</li>';
+          return;
+        }
+        
+        devices.forEach(device => {
+          const listItem = document.createElement('li');
+          listItem.classList.add('device-item');
+          listItem.textContent = device.name || `Device (ID: ${device.id})`;
+          listItem.addEventListener('click', () => selectBluetoothDevice(device, listItem));
+          bluetoothDevicesList.appendChild(listItem);
+        });
+      } catch (error) {
+        appendToDataView(bluetoothData, `Error listing devices: ${error.message}`, 'error');
+        console.error('Error listing Bluetooth devices:', error);
+      }
+    }
+    
+    async function scanBluetoothDevices() {
+      try {
+        appendToDataView(bluetoothData, 'Scanning for Bluetooth devices...', 'info');
+        
+        // Create an array of all possible Bluetooth service UUIDs
+        const ALL_SERVICE_UUIDS = [];
+        
+        // Add all standard Bluetooth SIG services (16-bit UUIDs)
+        for (let i = 0x1800; i <= 0x183F; i++) {
+          ALL_SERVICE_UUIDS.push(`0000${i.toString(16).padStart(4, '0')}-0000-1000-8000-00805f9b34fb`);
+        }
+        
+        // Add common GNSS/RTK specific services
+        const GNSS_SERVICES = [
+          '6e400001-b5a3-f393-e0a9-e50e24dcca9e', // Nordic UART Service
+          '0000ffe0-0000-1000-8000-00805f9b34fb', // Nordic UART Service (alternate form)
+          '49535343-fe7d-4ae5-8fa9-9fafd205e455', // Common HM-10/HM-16/HM-17 BLE Module Service
+          '0000fff0-0000-1000-8000-00805f9b34fb', // Common HC-08/HC-10 BLE Service
+          '0000fe9a-0000-1000-8000-00805f9b34fb', // Possible custom service
+          '00001101-0000-1000-8000-00805f9b34fb', // SPP (Serial Port Profile)
+        ];
+        
+        ALL_SERVICE_UUIDS.push(...GNSS_SERVICES);
+        
+        // Request device with all possible services
+        const device = await navigator.bluetooth.requestDevice({
+          acceptAllDevices: true,
+          optionalServices: ALL_SERVICE_UUIDS
+        });
+        
+        // Clear existing devices list
+        bluetoothDevicesList.innerHTML = '';
+        
+        // Create a new list item for this device
+        const listItem = document.createElement('li');
+        listItem.classList.add('device-item');
+        listItem.textContent = device.name || `Device (ID: ${device.id})`;
+        listItem.addEventListener('click', () => selectBluetoothDevice(device, listItem));
+        bluetoothDevicesList.appendChild(listItem);
+        
+        // Select the device automatically
+        selectBluetoothDevice(device, listItem);
+      } catch (error) {
+        if (error.name === 'NotFoundError') {
+          appendToDataView(bluetoothData, 'No devices selected', 'info');
+        } else {
+          appendToDataView(bluetoothData, `Error scanning: ${error.message}`, 'error');
+          console.error('Error scanning for Bluetooth devices:', error);
+        }
+      }
+    }
+    
+    async function selectBluetoothDevice(device, listItem) {
+      try {
+        // Clear selection from all items
+        bluetoothDevicesList.querySelectorAll('.device-item').forEach(item => {
+          item.classList.remove('selected');
+        });
+        
+        // Select the current item
+        listItem.classList.add('selected');
+        
+        // Store the device
+        bluetoothDevice = device;
+        
+        // Update device info
+        const deviceInfo = {
+          name: device.name || 'Unnamed Device',
+          id: device.id,
+          connected: device.gatt.connected
+        };
+        
+        bluetoothDeviceInfo.innerHTML = `
+          <table>
+            <tr><th>Property</th><th>Value</th></tr>
+            <tr><td>Name</td><td>${deviceInfo.name}</td></tr>
+            <tr><td>ID</td><td>${deviceInfo.id}</td></tr>
+            <tr><td>Connected</td><td>${deviceInfo.connected ? 'Yes' : 'No'}</td></tr>
+          </table>
+          <div style="margin-top: 10px">
+            <button id="connectBluetooth">Connect to GATT Server</button>
+          </div>
+        `;
+        
+        // Add event listener to connect button
+        document.getElementById('connectBluetooth').addEventListener('click', connectBluetoothDevice);
+      } catch (error) {
+        appendToDataView(bluetoothData, `Error selecting device: ${error.message}`, 'error');
+        console.error('Error selecting Bluetooth device:', error);
+      }
+    }
+    
+    async function connectBluetoothDevice() {
+      if (!bluetoothDevice) {
+        appendToDataView(bluetoothData, 'No device selected', 'error');
+        return;
+      }
+      
+      try {
+        appendToDataView(bluetoothData, `Connecting to ${bluetoothDevice.name || 'device'}...`, 'info');
+        
+        // Connect to GATT server
+        bluetoothServer = await bluetoothDevice.gatt.connect();
+        
+        // Update UI
+        appendToDataView(bluetoothData, 'Connected to GATT server', 'success');
+        disconnectBluetoothBtn.disabled = false;
+        
+        // Update device info
+        const deviceInfo = {
+          name: bluetoothDevice.name || 'Unnamed Device',
+          id: bluetoothDevice.id,
+          connected: bluetoothDevice.gatt.connected
+        };
+        
+        bluetoothDeviceInfo.innerHTML = `
+          <table>
+            <tr><th>Property</th><th>Value</th></tr>
+            <tr><td>Name</td><td>${deviceInfo.name}</td></tr>
+            <tr><td>ID</td><td>${deviceInfo.id}</td></tr>
+            <tr><td>Connected</td><td>${deviceInfo.connected ? 'Yes' : 'No'}</td></tr>
+          </table>
+        `;
+        
+        // Get all services
+        await listServices();
+        
+        // Handle disconnection
+        bluetoothDevice.addEventListener('gattserverdisconnected', onBluetoothDisconnected);
+      } catch (error) {
+        appendToDataView(bluetoothData, `Error connecting: ${error.message}`, 'error');
+        console.error('Error connecting to Bluetooth device:', error);
+      }
+    }
+    
+    async function disconnectBluetooth() {
+      try {
+        if (bluetoothDevice && bluetoothDevice.gatt.connected) {
+          // Stop notifications if active
+          if (notificationCharacteristic) {
+            try {
+              await notificationCharacteristic.stopNotifications();
+              notificationCharacteristic.removeEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);
+              notificationCharacteristic = null;
+            } catch (e) {
+              console.warn('Error stopping notifications:', e);
+            }
+          }
+          
+          // Disconnect
+          bluetoothDevice.gatt.disconnect();
+          
+          // Update UI
+          appendToDataView(bluetoothData, 'Disconnected', 'info');
+          disconnectBluetoothBtn.disabled = true;
+          
+          // Clear services and characteristics
+          servicesList.innerHTML = '';
+          characteristicsList.innerHTML = '';
+          
+          // Disable characteristic buttons
+          readCharacteristicBtn.disabled = true;
+          startNotificationsBtn.disabled = true;
+          stopNotificationsBtn.disabled = true;
+          writeCharacteristicBtn.disabled = true;
+          
+          // Update device info
+          if (bluetoothDevice) {
+            const deviceInfo = {
+              name: bluetoothDevice.name || 'Unnamed Device',
+              id: bluetoothDevice.id,
+              connected: false
+            };
+            
+            bluetoothDeviceInfo.innerHTML = `
+              <table>
+                <tr><th>Property</th><th>Value</th></tr>
+                <tr><td>Name</td><td>${deviceInfo.name}</td></tr>
+                <tr><td>ID</td><td>${deviceInfo.id}</td></tr>
+                <tr><td>Connected</td><td>${deviceInfo.connected ? 'Yes' : 'No'}</td></tr>
+              </table>
+              <div style="margin-top: 10px">
+                <button id="connectBluetooth">Reconnect to GATT Server</button>
+              </div>
+            `;
+            
+            // Add event listener to connect button
+            document.getElementById('connectBluetooth').addEventListener('click', connectBluetoothDevice);
+          }
+        }
+      } catch (error) {
+        appendToDataView(bluetoothData, `Error disconnecting: ${error.message}`, 'error');
+        console.error('Error disconnecting from Bluetooth device:', error);
+      }
+    }
+    
+    function onBluetoothDisconnected() {
+      appendToDataView(bluetoothData, 'Device disconnected', 'info');
+      disconnectBluetoothBtn.disabled = true;
+      
+      // Clear services and characteristics
+      servicesList.innerHTML = '';
+      characteristicsList.innerHTML = '';
+      
+      // Disable characteristic buttons
+      readCharacteristicBtn.disabled = true;
+      startNotificationsBtn.disabled = true;
+      stopNotificationsBtn.disabled = true;
+      writeCharacteristicBtn.disabled = true;
+      
+      // Update device info
+      if (bluetoothDevice) {
+        const deviceInfo = {
+          name: bluetoothDevice.name || 'Unnamed Device',
+          id: bluetoothDevice.id,
+          connected: false
+        };
+        
+        bluetoothDeviceInfo.innerHTML = `
+          <table>
+            <tr><th>Property</th><th>Value</th></tr>
+            <tr><td>Name</td><td>${deviceInfo.name}</td></tr>
+            <tr><td>ID</td><td>${deviceInfo.id}</td></tr>
+            <tr><td>Connected</td><td>${deviceInfo.connected ? 'Yes' : 'No'}</td></tr>
+          </table>
+          <div style="margin-top: 10px">
+            <button id="connectBluetooth">Reconnect to GATT Server</button>
+          </div>
+        `;
+        
+        // Add event listener to connect button
+        document.getElementById('connectBluetooth').addEventListener('click', connectBluetoothDevice);
+      }
+    }
+    
+    async function listServices() {
+      if (!bluetoothServer) {
+        appendToDataView(bluetoothData, 'Not connected to GATT server', 'error');
+        return;
+      }
+      
+      try {
+        // Clear the services list
+        servicesList.innerHTML = '';
+        
+        // Get all services
+        const services = await bluetoothServer.getPrimaryServices();
+        
+        if (services.length === 0) {
+          servicesList.innerHTML = '<li>No services found</li>';
+          return;
+        }
+        
+        // Standard Bluetooth services lookup
+        const standardServices = {
+          '00001800-0000-1000-8000-00805f9b34fb': 'Generic Access',
+          '00001801-0000-1000-8000-00805f9b34fb': 'Generic Attribute',
+          '00001802-0000-1000-8000-00805f9b34fb': 'Immediate Alert',
+          '00001803-0000-1000-8000-00805f9b34fb': 'Link Loss',
+          '00001804-0000-1000-8000-00805f9b34fb': 'Tx Power',
+          '00001805-0000-1000-8000-00805f9b34fb': 'Current Time',
+          '00001806-0000-1000-8000-00805f9b34fb': 'Reference Time Update',
+          '00001807-0000-1000-8000-00805f9b34fb': 'Next DST Change',
+          '00001808-0000-1000-8000-00805f9b34fb': 'Glucose',
+          '00001809-0000-1000-8000-00805f9b34fb': 'Health Thermometer',
+          '0000180a-0000-1000-8000-00805f9b34fb': 'Device Information',
+          '0000180d-0000-1000-8000-00805f9b34fb': 'Heart Rate',
+          '0000180e-0000-1000-8000-00805f9b34fb': 'Phone Alert Status',
+          '0000180f-0000-1000-8000-00805f9b34fb': 'Battery Service',
+          '00001810-0000-1000-8000-00805f9b34fb': 'Blood Pressure',
+          '00001811-0000-1000-8000-00805f9b34fb': 'Alert Notification',
+          '00001812-0000-1000-8000-00805f9b34fb': 'Human Interface Device',
+          '00001813-0000-1000-8000-00805f9b34fb': 'Scan Parameters',
+          '00001814-0000-1000-8000-00805f9b34fb': 'Running Speed and Cadence',
+          '00001815-0000-1000-8000-00805f9b34fb': 'Automation IO',
+          '00001816-0000-1000-8000-00805f9b34fb': 'Cycling Speed and Cadence',
+          '00001818-0000-1000-8000-00805f9b34fb': 'Cycling Power',
+          '00001819-0000-1000-8000-00805f9b34fb': 'Location and Navigation',
+          '0000181a-0000-1000-8000-00805f9b34fb': 'Environmental Sensing',
+          '0000181b-0000-1000-8000-00805f9b34fb': 'Body Composition',
+          '0000181c-0000-1000-8000-00805f9b34fb': 'User Data',
+          '0000181d-0000-1000-8000-00805f9b34fb': 'Weight Scale',
+          '0000181e-0000-1000-8000-00805f9b34fb': 'Bond Management',
+          '0000181f-0000-1000-8000-00805f9b34fb': 'Continuous Glucose Monitoring',
+          '00001820-0000-1000-8000-00805f9b34fb': 'Internet Protocol Support',
+          '00001821-0000-1000-8000-00805f9b34fb': 'Indoor Positioning',
+          '00001822-0000-1000-8000-00805f9b34fb': 'Pulse Oximeter',
+          '00001823-0000-1000-8000-00805f9b34fb': 'HTTP Proxy',
+          '00001824-0000-1000-8000-00805f9b34fb': 'Transport Discovery',
+          '00001825-0000-1000-8000-00805f9b34fb': 'Object Transfer',
+          '00001826-0000-1000-8000-00805f9b34fb': 'Fitness Machine',
+          '00001827-0000-1000-8000-00805f9b34fb': 'Mesh Provisioning',
+          '00001828-0000-1000-8000-00805f9b34fb': 'Mesh Proxy',
+          '00001829-0000-1000-8000-00805f9b34fb': 'Reconnection Configuration',
+          
+          // GNSS specific services
+          '6e400001-b5a3-f393-e0a9-e50e24dcca9e': 'Nordic UART Service',
+          '0000ffe0-0000-1000-8000-00805f9b34fb': 'Nordic UART Service (alternate)',
+          '49535343-fe7d-4ae5-8fa9-9fafd205e455': 'HM-10/HM-16/HM-17 Service',
+          '0000fff0-0000-1000-8000-00805f9b34fb': 'HC-08/HC-10 Service',
+          '0000fe9a-0000-1000-8000-00805f9b34fb': 'Custom SparkFun Service',
+          '00001101-0000-1000-8000-00805f9b34fb': 'Serial Port Profile (SPP)'
+        };
+        
+        // List all services
+        for (const service of services) {
+          const serviceName = standardServices[service.uuid] || 'Unknown Service';
+          
+          const listItem = document.createElement('li');
+          listItem.classList.add('device-item');
+          listItem.innerHTML = `
+            <div><strong>${serviceName}</strong></div>
+            <div><small>UUID: ${service.uuid}</small></div>
+          `;
+          listItem.addEventListener('click', async () => {
+            // Clear selection from all items
+            servicesList.querySelectorAll('.device-item').forEach(item => {
+              item.classList.remove('selected');
+            });
+            
+            // Select the current item
+            listItem.classList.add('selected');
+            
+            // Show characteristics for this service
+            await listCharacteristics(service);
+          });
+          
+          servicesList.appendChild(listItem);
+        }
+      } catch (error) {
+        appendToDataView(bluetoothData, `Error listing services: ${error.message}`, 'error');
+        console.error('Error listing Bluetooth services:', error);
+      }
+    }
+    
+    async function listCharacteristics(service) {
+      try {
+        // Clear the characteristics list
+        characteristicsList.innerHTML = '';
+        
+        // Get all characteristics
+        const characteristics = await service.getCharacteristics();
+        
+        if (characteristics.length === 0) {
+          characteristicsList.innerHTML = '<li>No characteristics found</li>';
+          return;
+        }
+        
+        // Standard Bluetooth characteristics lookup
+        const standardCharacteristics = {
+          // Nordic UART Service
+          '6e400002-b5a3-f393-e0a9-e50e24dcca9e': 'Nordic UART TX (write)',
+          '6e400003-b5a3-f393-e0a9-e50e24dcca9e': 'Nordic UART RX (notify)',
+          
+          // HM-10 Service
+          '49535343-8841-43f4-a8d4-ecbe34729bb3': 'HM-10 TX',
+          '49535343-1e4d-4bd9-ba61-23c647249616': 'HM-10 RX',
+          
+          // Common BLE Service
+          '0000ffe1-0000-1000-8000-00805f9b34fb': 'Common BLE TX',
+          '0000ffe2-0000-1000-8000-00805f9b34fb': 'Common BLE RX',
+          
+          // HC-08 Service
+          '0000fff1-0000-1000-8000-00805f9b34fb': 'HC-08 TX',
+          '0000fff2-0000-1000-8000-00805f9b34fb': 'HC-08 RX',
+          
+          // Device Information Service
+          '00002a00-0000-1000-8000-00805f9b34fb': 'Device Name',
+          '00002a01-0000-1000-8000-00805f9b34fb': 'Appearance',
+          '00002a02-0000-1000-8000-00805f9b34fb': 'Peripheral Privacy Flag',
+          '00002a03-0000-1000-8000-00805f9b34fb': 'Reconnection Address',
+          '00002a04-0000-1000-8000-00805f9b34fb': 'Peripheral Preferred Connection Parameters',
+          '00002a05-0000-1000-8000-00805f9b34fb': 'Service Changed',
+          '00002a23-0000-1000-8000-00805f9b34fb': 'System ID',
+          '00002a24-0000-1000-8000-00805f9b34fb': 'Model Number String',
+          '00002a25-0000-1000-8000-00805f9b34fb': 'Serial Number String',
+          '00002a26-0000-1000-8000-00805f9b34fb': 'Firmware Revision String',
+          '00002a27-0000-1000-8000-00805f9b34fb': 'Hardware Revision String',
+          '00002a28-0000-1000-8000-00805f9b34fb': 'Software Revision String',
+          '00002a29-0000-1000-8000-00805f9b34fb': 'Manufacturer Name String',
+          '00002a2a-0000-1000-8000-00805f9b34fb': 'IEEE 11073-20601 Regulatory Certification Data List',
+          '00002a50-0000-1000-8000-00805f9b34fb': 'PnP ID',
+          
+          // Battery Service
+          '00002a19-0000-1000-8000-00805f9b34fb': 'Battery Level',
+          
+          // Heart Rate Service
+          '00002a37-0000-1000-8000-00805f9b34fb': 'Heart Rate Measurement',
+          '00002a38-0000-1000-8000-00805f9b34fb': 'Body Sensor Location',
+          '00002a39-0000-1000-8000-00805f9b34fb': 'Heart Rate Control Point'
+        };
+        
+        // List all characteristics
+        for (const characteristic of characteristics) {
+          const characteristicName = standardCharacteristics[characteristic.uuid] || 'Unknown Characteristic';
+          
+          // Get properties
+          const properties = [];
+          if (characteristic.properties.broadcast) properties.push('Broadcast');
+          if (characteristic.properties.read) properties.push('Read');
+          if (characteristic.properties.writeWithoutResponse) properties.push('Write Without Response');
+          if (characteristic.properties.write) properties.push('Write');
+          if (characteristic.properties.notify) properties.push('Notify');
+          if (characteristic.properties.indicate) properties.push('Indicate');
+          if (characteristic.properties.authenticatedSignedWrites) properties.push('Authenticated Signed Writes');
+          if (characteristic.properties.reliableWrite) properties.push('Reliable Write');
+          if (characteristic.properties.writableAuxiliaries) properties.push('Writable Auxiliaries');
+          
+          const listItem = document.createElement('li');
+          listItem.classList.add('characteristic-item');
+          listItem.innerHTML = `
+            <div><strong>${characteristicName}</strong></div>
+            <div><small>UUID: ${characteristic.uuid}</small></div>
+            <div><small>Properties: ${properties.join(', ')}</small></div>
+          `;
+          listItem.addEventListener('click', () => selectCharacteristic(characteristic, listItem));
+          
+          characteristicsList.appendChild(listItem);
+        }
+      } catch (error) {
+        appendToDataView(bluetoothData, `Error listing characteristics: ${error.message}`, 'error');
+        console.error('Error listing Bluetooth characteristics:', error);
+      }
+    }
+    
+    function selectCharacteristic(characteristic, listItem) {
+      // Clear selection from all items
+      characteristicsList.querySelectorAll('.characteristic-item').forEach(item => {
+        item.classList.remove('selected');
+      });
+      
+      // Select the current item
+      listItem.classList.add('selected');
+      
+      // Store the characteristic
+      selectedCharacteristic = characteristic;
+      
+      // Enable or disable buttons based on properties
+      readCharacteristicBtn.disabled = !characteristic.properties.read;
+      startNotificationsBtn.disabled = !characteristic.properties.notify && !characteristic.properties.indicate;
+      stopNotificationsBtn.disabled = true;
+      writeCharacteristicBtn.disabled = !characteristic.properties.write && !characteristic.properties.writeWithoutResponse;
+      
+      // If this characteristic can be written to without response, select that option by default
+      if (characteristic.properties.writeWithoutResponse) {
+        writeTypeSelect.value = 'writeWithoutResponse';
+      } else {
+        writeTypeSelect.value = 'write';
+      }
+    }
+    
+    async function readCharacteristicValue() {
+      if (!selectedCharacteristic) {
+        appendToDataView(bluetoothData, 'No characteristic selected', 'error');
+        return;
+      }
+      
+      try {
+        const value = await selectedCharacteristic.readValue();
+        const formattedValue = formatBuffer(value.buffer, bluetoothDataFormat.value);
+        appendToDataView(bluetoothData, `Read value: ${formattedValue}`, 'success');
+      } catch (error) {
+        appendToDataView(bluetoothData, `Error reading characteristic: ${error.message}`, 'error');
+        console.error('Error reading characteristic:', error);
+      }
+    }
+    
+    async function startCharacteristicNotifications() {
+      if (!selectedCharacteristic) {
+        appendToDataView(bluetoothData, 'No characteristic selected', 'error');
+        return;
+      }
+      
+      if (!selectedCharacteristic.properties.notify && !selectedCharacteristic.properties.indicate) {
+        appendToDataView(bluetoothData, 'Characteristic does not support notifications', 'error');
+        return;
+      }
+      
+      try {
+        await selectedCharacteristic.startNotifications();
+        notificationCharacteristic = selectedCharacteristic;
+        selectedCharacteristic.addEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);
+        appendToDataView(bluetoothData, 'Notifications started', 'success');
+        
+        // Update UI
+        startNotificationsBtn.disabled = true;
+        stopNotificationsBtn.disabled = false;
+      } catch (error) {
+        appendToDataView(bluetoothData, `Error starting notifications: ${error.message}`, 'error');
+        console.error('Error starting notifications:', error);
+      }
+    }
+    
+    async function stopCharacteristicNotifications() {
+      if (!notificationCharacteristic) {
+        appendToDataView(bluetoothData, 'No notifications active', 'error');
+        return;
+      }
+      
+      try {
+        await notificationCharacteristic.stopNotifications();
+        notificationCharacteristic.removeEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);
+        notificationCharacteristic = null;
+        appendToDataView(bluetoothData, 'Notifications stopped', 'info');
+        
+        // Update UI
+        startNotificationsBtn.disabled = false;
+        stopNotificationsBtn.disabled = true;
+      } catch (error) {
+        appendToDataView(bluetoothData, `Error stopping notifications: ${error.message}`, 'error');
+        console.error('Error stopping notifications:', error);
+      }
+    }
+    
+    function handleCharacteristicValueChanged(event) {
+      const value = event.target.value;
+      const formattedValue = formatBuffer(value.buffer, bluetoothDataFormat.value);
+      appendToDataView(bluetoothData, formattedValue);
+    }
+    
+    async function writeCharacteristicValue() {
+      if (!selectedCharacteristic) {
+        appendToDataView(bluetoothData, 'No characteristic selected', 'error');
+        return;
+      }
+      
+      if (!selectedCharacteristic.properties.write && !selectedCharacteristic.properties.writeWithoutResponse) {
+        appendToDataView(bluetoothData, 'Characteristic does not support writing', 'error');
+        return;
+      }
+      
+      try {
+        const value = writeValueTextarea.value.trim();
+        let buffer;
+        
+        // Check if the value is a hex string
+        if (/^([0-9A-Fa-f]{2}\s*)+$/.test(value)) {
+          // Parse hex string
+          const hexValues = value.split(/\s+/);
+          const bytes = new Uint8Array(hexValues.length);
+          for (let i = 0; i < hexValues.length; i++) {
+            bytes[i] = parseInt(hexValues[i], 16);
+          }
+          buffer = bytes;
+        } else {
+          // Treat as text
+          buffer = new TextEncoder().encode(value);
+        }
+        
+        const writeType = writeTypeSelect.value;
+        
+        if (writeType === 'writeWithoutResponse' && selectedCharacteristic.properties.writeWithoutResponse) {
+          await selectedCharacteristic.writeValueWithoutResponse(buffer);
+        } else {
+          await selectedCharacteristic.writeValue(buffer);
+        }
+        
+        appendToDataView(bluetoothData, `Value written using ${writeType}`, 'success');
+      } catch (error) {
+        appendToDataView(bluetoothData, `Error writing characteristic: ${error.message}`, 'error');
+        console.error('Error writing characteristic:', error);
+      }
+    }
+    
+    // Clear data views
+    function clearSerialDataView() {
+      serialData.innerHTML = '';
+    }
+    
+    function clearBluetoothDataView() {
+      bluetoothData.innerHTML = '';
+    }
+    
+    // Add event listeners
+    document.getElementById('listSerialPorts').addEventListener('click', listSerialPorts);
+    document.getElementById('requestSerialPort').addEventListener('click', requestSerialPort);
+    connectSerialBtn.addEventListener('click', connectSerial);
+    disconnectSerialBtn.addEventListener('click', disconnectSerial);
+    clearSerialDataBtn.addEventListener('click', clearSerialDataView);
+    
+    document.getElementById('listBluetoothDevices').addEventListener('click', listBluetoothDevices);
+    document.getElementById('scanBluetoothDevices').addEventListener('click', scanBluetoothDevices);
+    disconnectBluetoothBtn.addEventListener('click', disconnectBluetooth);
+    clearBluetoothDataBtn.addEventListener('click', clearBluetoothDataView);
+    
+    readCharacteristicBtn.addEventListener('click', readCharacteristicValue);
+    startNotificationsBtn.addEventListener('click', startCharacteristicNotifications);
+    stopNotificationsBtn.addEventListener('click', stopCharacteristicNotifications);
+    writeCharacteristicBtn.addEventListener('click', writeCharacteristicValue);
+    
+    // Initialize
+    if ('serial' in navigator) {
+      listSerialPorts();
+    }
+    
+    if ('bluetooth' in navigator) {
+      listBluetoothDevices();
+    }
+  </script>
+</body>
+</html>

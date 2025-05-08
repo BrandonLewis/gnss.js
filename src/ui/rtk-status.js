@@ -7,12 +7,23 @@
 export class RtkStatus {
   /**
    * Create an RTK status component
-   * @param {Object} gnssManager - GNSS manager instance
-   * @param {HTMLElement} container - Container element for the status UI
+   * @param {Object} options - Configuration options
+   * @param {EventEmitter} options.events - Event emitter for communication
+   * @param {string} options.selector - CSS selector for the container element
    */
-  constructor(gnssManager, container) {
-    this.gnss = gnssManager;
-    this.container = container;
+  constructor(options = {}) {
+    this.events = options.events;
+    
+    // Find container element if selector provided
+    if (options.selector) {
+      this.container = document.querySelector(options.selector);
+    }
+    
+    // If no container, don't initialize UI
+    if (!this.container) {
+      console.warn('RtkStatus: No container element found. UI will not be initialized.');
+      return;
+    }
     
     // Current status information
     this.fixQuality = 0;
@@ -311,15 +322,20 @@ export class RtkStatus {
    * Register event listeners for GNSS and NTRIP events
    */
   registerEventListeners() {
+    if (!this.events) {
+      console.warn('RtkStatus: No events emitter provided. Status will not update.');
+      return;
+    }
+    
     // GNSS position events
-    this.gnss.events.on('position', this.handlePosition.bind(this));
+    this.events.on('position', this.handlePosition.bind(this));
     
     // NTRIP correction events
-    this.gnss.events.on('ntrip:rtcm', this.handleRtcmData.bind(this));
+    this.events.on('ntrip:rtcm', this.handleRtcmData.bind(this));
     
     // NTRIP status events
-    this.gnss.events.on('ntrip:connected', this.handleNtripConnected.bind(this));
-    this.gnss.events.on('ntrip:disconnected', this.handleNtripDisconnected.bind(this));
+    this.events.on('ntrip:connected', this.handleNtripConnected.bind(this));
+    this.events.on('ntrip:disconnected', this.handleNtripDisconnected.bind(this));
     
     // Update status periodically
     setInterval(() => {

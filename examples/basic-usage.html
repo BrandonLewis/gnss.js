@@ -10,45 +10,279 @@
       max-width: 800px;
       margin: 0 auto;
       padding: 1rem;
+      line-height: 1.5;
+    }
+    h1, h2, h3 {
+      color: #333;
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .panel {
+      flex: 1;
+      min-width: 300px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     button {
-      padding: 0.5rem 1rem;
-      margin: 0.5rem;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
       cursor: pointer;
+      margin: 5px 5px 5px 0;
+      font-size: 14px;
     }
-    #status {
+    button:hover {
+      background-color: #45a049;
+    }
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    .status {
+      padding: 0.7rem;
+      border-radius: 4px;
       margin: 1rem 0;
-      padding: 1rem;
+    }
+    .status.connected {
+      background-color: #e8f5e9;
+      color: #1b5e20;
+    }
+    .status.disconnected {
       background-color: #f5f5f5;
-      border-radius: 4px;
+      color: #666;
     }
-    #position {
-      margin: 1rem 0;
-      padding: 1rem;
+    .status.error {
+      background-color: #ffebee;
+      color: #b71c1c;
+    }
+    .data-panel {
       background-color: #e0f7fa;
+      padding: 1rem;
       border-radius: 4px;
+      margin: 1rem 0;
+    }
+    .console {
+      background-color: #f8f9fa;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 1rem;
+      height: 150px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 12px;
+      margin-top: 1rem;
+    }
+    .console .error {
+      color: #d32f2f;
+    }
+    .console .info {
+      color: #1976d2;
+    }
+    .console .success {
+      color: #388e3c;
+    }
+    .home-link {
+      display: inline-block;
+      margin-bottom: 10px;
+      color: #1976d2;
+      text-decoration: none;
+    }
+    .home-link:hover {
+      text-decoration: underline;
+    }
+    #satellites-container {
+      overflow-x: auto;
+    }
+    #satellites-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.5rem;
+    }
+    #satellites-table th, #satellites-table td {
+      padding: 0.5rem;
+      text-align: center;
+      border: 1px solid #ddd;
+    }
+    #satellites-table th {
+      background-color: #f2f2f2;
+    }
+    #satellites-table tr:nth-child(even) {
+      background-color: #f9f9f9;
     }
   </style>
 </head>
 <body>
+  <a href="/" class="home-link">← Back to Examples Home</a>
+  
   <h1>gnss.js Basic Usage Example</h1>
   
-  <div>
-    <button id="connectBluetooth">Connect via Bluetooth</button>
-    <button id="connectSerial">Connect via Serial</button>
-    <button id="disconnectDevice">Disconnect Device</button>
+  <div class="container">
+    <div class="panel">
+      <h2>Device Connection</h2>
+      <div id="api-support"></div>
+      
+      <div>
+        <h3>Connection Options</h3>
+        <button id="connectBluetooth">Connect via Bluetooth</button>
+        <button id="connectSerial">Connect via Serial</button>
+        <button id="disconnect" disabled>Disconnect</button>
+      </div>
+      
+      <div id="status" class="status disconnected">Status: Disconnected</div>
+      
+      <h3>Device Settings</h3>
+      <div id="device-info">
+        <p>Not connected.</p>
+      </div>
+    </div>
+    
+    <div class="panel">
+      <h2>NTRIP Client</h2>
+      
+      <div>
+        <h3>NTRIP Connection</h3>
+        <button id="connectNtrip" disabled>Connect NTRIP</button>
+        <button id="disconnectNtrip" disabled>Disconnect NTRIP</button>
+      </div>
+      
+      <div id="ntrip-status" class="status disconnected">NTRIP: Disconnected</div>
+      
+      <div id="ntrip-form" style="display: none;">
+        <h3>NTRIP Configuration</h3>
+        <div style="margin-bottom: 10px;">
+          <label for="ntrip-host">Host:</label><br>
+          <input type="text" id="ntrip-host" value="rtk2go.com" style="width: 100%">
+        </div>
+        <div style="margin-bottom: 10px;">
+          <label for="ntrip-port">Port:</label><br>
+          <input type="text" id="ntrip-port" value="2101" style="width: 100%">
+        </div>
+        <div style="margin-bottom: 10px;">
+          <label for="ntrip-mountpoint">Mountpoint:</label><br>
+          <input type="text" id="ntrip-mountpoint" style="width: 100%">
+        </div>
+        <div style="margin-bottom: 10px;">
+          <label for="ntrip-username">Username (optional):</label><br>
+          <input type="text" id="ntrip-username" style="width: 100%">
+        </div>
+        <div style="margin-bottom: 10px;">
+          <label for="ntrip-password">Password (optional):</label><br>
+          <input type="password" id="ntrip-password" style="width: 100%">
+        </div>
+        <button id="ntrip-connect">Connect</button>
+        <button id="ntrip-cancel">Cancel</button>
+      </div>
+    </div>
   </div>
   
-  <div>
-    <button id="connectNtrip">Connect NTRIP</button>
-    <button id="disconnectNtrip">Disconnect NTRIP</button>
+  <div class="panel">
+    <h2>Position Data</h2>
+    <div id="position" class="data-panel">
+      <p>No position data available. Connect to a GNSS device to receive position updates.</p>
+    </div>
+    
+    <h3>Satellites</h3>
+    <div id="satellites-container">
+      <table id="satellites-table">
+        <thead>
+          <tr>
+            <th>PRN</th>
+            <th>System</th>
+            <th>Elevation</th>
+            <th>Azimuth</th>
+            <th>SNR</th>
+            <th>Used</th>
+          </tr>
+        </thead>
+        <tbody id="satellites-data">
+          <tr>
+            <td colspan="6">No satellite data available</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
   
-  <div id="status">Status: Disconnected</div>
-  <div id="position">Position: No data</div>
+  <div class="panel">
+    <h2>Debug Console</h2>
+    <div id="console" class="console"></div>
+  </div>
   
   <script type="module">
     import { GnssModule } from '../dist/gnss.esm.js';
+    
+    // UI Elements
+    const statusEl = document.getElementById('status');
+    const deviceInfoEl = document.getElementById('device-info');
+    const positionEl = document.getElementById('position');
+    const satellitesEl = document.getElementById('satellites-data');
+    const ntripStatusEl = document.getElementById('ntrip-status');
+    const ntripFormEl = document.getElementById('ntrip-form');
+    const apiSupportEl = document.getElementById('api-support');
+    const consoleEl = document.getElementById('console');
+    
+    // Buttons
+    const connectBluetoothBtn = document.getElementById('connectBluetooth');
+    const connectSerialBtn = document.getElementById('connectSerial');
+    const disconnectBtn = document.getElementById('disconnect');
+    const connectNtripBtn = document.getElementById('connectNtrip');
+    const disconnectNtripBtn = document.getElementById('disconnectNtrip');
+    
+    // NTRIP form
+    const ntripHostInput = document.getElementById('ntrip-host');
+    const ntripPortInput = document.getElementById('ntrip-port');
+    const ntripMountpointInput = document.getElementById('ntrip-mountpoint');
+    const ntripUsernameInput = document.getElementById('ntrip-username');
+    const ntripPasswordInput = document.getElementById('ntrip-password');
+    const ntripConnectBtn = document.getElementById('ntrip-connect');
+    const ntripCancelBtn = document.getElementById('ntrip-cancel');
+    
+    // Check API support
+    let html = '';
+    if ('bluetooth' in navigator) {
+      html += '<div style="color: green">✓ Web Bluetooth API is supported</div>';
+    } else {
+      html += '<div style="color: red">✗ Web Bluetooth API is not supported</div>';
+      connectBluetoothBtn.disabled = true;
+    }
+    
+    if ('serial' in navigator) {
+      html += '<div style="color: green">✓ Web Serial API is supported</div>';
+    } else {
+      html += '<div style="color: red">✗ Web Serial API is not supported</div>';
+      connectSerialBtn.disabled = true;
+    }
+    
+    apiSupportEl.innerHTML = html;
+    
+    // Helper functions
+    function updateStatus(message, type) {
+      statusEl.textContent = message;
+      statusEl.className = `status ${type}`;
+    }
+    
+    function updateNtripStatus(message, type) {
+      ntripStatusEl.textContent = message;
+      ntripStatusEl.className = `status ${type}`;
+    }
+    
+    function logMessage(message, type = 'normal') {
+      const timestamp = new Date().toLocaleTimeString();
+      const entry = document.createElement('div');
+      entry.className = type;
+      entry.textContent = `[${timestamp}] ${message}`;
+      
+      consoleEl.appendChild(entry);
+      consoleEl.scrollTop = consoleEl.scrollHeight;
+    }
     
     // Create a new GNSS module instance
     const gnss = new GnssModule({
@@ -59,114 +293,274 @@
       }
     });
     
-    // UI Elements
-    const statusEl = document.getElementById('status');
-    const positionEl = document.getElementById('position');
-    
     // Set up event listeners
     gnss.on('position', (position) => {
       positionEl.innerHTML = `
-        <h3>Position Data</h3>
-        <p>Latitude: ${position.latitude.toFixed(6)}</p>
-        <p>Longitude: ${position.longitude.toFixed(6)}</p>
-        <p>Altitude: ${position.altitude ? position.altitude.toFixed(2) + 'm' : 'N/A'}</p>
-        <p>Fix Quality: ${position.quality || 0}</p>
-        <p>Satellites: ${position.satellites || 0}</p>
-        <p>Timestamp: ${position.timestamp.toLocaleTimeString()}</p>
+        <div>
+          <strong>Latitude:</strong> ${position.latitude.toFixed(6)}° ${position.latitude >= 0 ? 'N' : 'S'}
+        </div>
+        <div>
+          <strong>Longitude:</strong> ${position.longitude.toFixed(6)}° ${position.longitude >= 0 ? 'E' : 'W'}
+        </div>
+        <div>
+          <strong>Altitude:</strong> ${position.altitude ? position.altitude.toFixed(2) + 'm' : 'N/A'}
+        </div>
+        <div>
+          <strong>Fix Quality:</strong> ${getFix(position.quality || 0)}
+        </div>
+        <div>
+          <strong>Satellites Used:</strong> ${position.satellites || 0}
+        </div>
+        <div>
+          <strong>HDOP:</strong> ${position.hdop ? position.hdop.toFixed(1) : 'N/A'}
+        </div>
+        <div>
+          <strong>Speed:</strong> ${position.speed ? position.speed.toFixed(2) + ' km/h' : 'N/A'}
+        </div>
+        <div>
+          <strong>Course:</strong> ${position.course ? position.course.toFixed(1) + '°' : 'N/A'}
+        </div>
+        <div>
+          <strong>Timestamp:</strong> ${position.timestamp.toLocaleTimeString()}
+        </div>
       `;
+      
+      logMessage(`Position updated: ${position.latitude.toFixed(6)},${position.longitude.toFixed(6)}`, 'info');
+    });
+    
+    gnss.on('satellites', (satellites) => {
+      if (!satellites || satellites.length === 0) {
+        satellitesEl.innerHTML = '<tr><td colspan="6">No satellite data available</td></tr>';
+        return;
+      }
+      
+      let html = '';
+      
+      satellites.forEach(sat => {
+        const system = getGnssSystem(sat.prn);
+        html += `
+          <tr>
+            <td>${sat.prn}</td>
+            <td>${system}</td>
+            <td>${sat.elevation !== undefined ? sat.elevation + '°' : 'N/A'}</td>
+            <td>${sat.azimuth !== undefined ? sat.azimuth + '°' : 'N/A'}</td>
+            <td>${sat.snr !== undefined ? sat.snr + ' dB' : 'N/A'}</td>
+            <td>${sat.used ? '✓' : '✗'}</td>
+          </tr>
+        `;
+      });
+      
+      satellitesEl.innerHTML = html;
+      logMessage(`Satellites updated: ${satellites.length} satellites in view`, 'info');
     });
     
     gnss.on('connection:connected', (data) => {
-      statusEl.innerHTML = `Status: Connected via ${data.method}`;
-      statusEl.style.backgroundColor = '#e8f5e9';
+      updateStatus(`Connected via ${data.method}`, 'connected');
+      disconnectBtn.disabled = false;
+      connectBluetoothBtn.disabled = true;
+      connectSerialBtn.disabled = true;
+      connectNtripBtn.disabled = false;
+      
+      if (data.deviceInfo) {
+        deviceInfoEl.innerHTML = `
+          <div><strong>Connection Method:</strong> ${data.method}</div>
+          <div><strong>Device Name:</strong> ${data.deviceInfo.name || 'Unknown'}</div>
+          <div><strong>Device ID:</strong> ${data.deviceInfo.id || 'Unknown'}</div>
+        `;
+      }
+      
+      logMessage(`Connected to device via ${data.method}`, 'success');
     });
     
     gnss.on('connection:disconnected', () => {
-      statusEl.innerHTML = 'Status: Disconnected';
-      statusEl.style.backgroundColor = '#f5f5f5';
+      updateStatus('Disconnected', 'disconnected');
+      disconnectBtn.disabled = true;
+      connectBluetoothBtn.disabled = false;
+      connectSerialBtn.disabled = false;
+      connectNtripBtn.disabled = true;
+      
+      deviceInfoEl.innerHTML = '<p>Not connected.</p>';
+      logMessage('Disconnected from device', 'info');
     });
     
     gnss.on('connection:error', (data) => {
-      statusEl.innerHTML = `Error: ${data.message}`;
-      statusEl.style.backgroundColor = '#ffebee';
+      updateStatus(`Error: ${data.message}`, 'error');
+      logMessage(`Connection error: ${data.message}`, 'error');
     });
     
     gnss.on('ntrip:connected', (data) => {
-      statusEl.innerHTML += `<br>NTRIP: Connected to ${data.mountpoint}`;
+      updateNtripStatus(`Connected to ${data.mountpoint}`, 'connected');
+      disconnectNtripBtn.disabled = false;
+      connectNtripBtn.disabled = true;
+      
+      logMessage(`Connected to NTRIP mountpoint: ${data.mountpoint}`, 'success');
     });
     
     gnss.on('ntrip:disconnected', () => {
-      statusEl.innerHTML = statusEl.innerHTML.replace(/<br>NTRIP:.+/, '');
+      updateNtripStatus('Disconnected', 'disconnected');
+      disconnectNtripBtn.disabled = true;
+      connectNtripBtn.disabled = false;
+      
+      logMessage('Disconnected from NTRIP', 'info');
     });
+    
+    gnss.on('ntrip:error', (data) => {
+      updateNtripStatus(`Error: ${data.message}`, 'error');
+      logMessage(`NTRIP error: ${data.message}`, 'error');
+    });
+    
+    gnss.on('ntrip:data', () => {
+      // You can update a counter here if you want to show RTCM message reception
+    });
+    
+    // GNSS helper functions
+    function getFix(quality) {
+      switch(parseInt(quality)) {
+        case 0: return 'No Fix';
+        case 1: return 'GPS Fix';
+        case 2: return 'DGPS Fix';
+        case 3: return 'PPS Fix';
+        case 4: return 'RTK Fixed';
+        case 5: return 'RTK Float';
+        case 6: return 'Estimated Fix';
+        case 7: return 'Manual Input Mode';
+        case 8: return 'Simulation Mode';
+        default: return `Unknown (${quality})`;
+      }
+    }
+    
+    function getGnssSystem(prn) {
+      if (prn === undefined) return 'Unknown';
+      
+      const num = parseInt(prn, 10);
+      if (isNaN(num)) {
+        const prefix = prn.substring(0, 1);
+        switch (prefix) {
+          case 'G': return 'GPS';
+          case 'R': return 'GLONASS';
+          case 'E': return 'Galileo';
+          case 'C': return 'BeiDou';
+          case 'J': return 'QZSS';
+          case 'S': return 'SBAS';
+          case 'I': return 'IRNSS';
+          default: return 'Unknown';
+        }
+      }
+      
+      // PRN number based identification
+      if (num >= 1 && num <= 32) return 'GPS';
+      if (num >= 33 && num <= 64) return 'SBAS';
+      if (num >= 65 && num <= 96) return 'GLONASS';
+      if (num >= 193 && num <= 197) return 'QZSS';
+      if (num >= 201 && num <= 237) return 'BeiDou';
+      if (num >= 301 && num <= 336) return 'Galileo';
+      
+      return 'Unknown';
+    }
     
     // Button event handlers
-    document.getElementById('connectBluetooth').addEventListener('click', async () => {
+    connectBluetoothBtn.addEventListener('click', async () => {
       try {
+        logMessage('Connecting via Bluetooth...', 'info');
+        updateStatus('Connecting...', 'disconnected');
+        
         const success = await gnss.connectBluetooth();
+        
         if (!success) {
-          console.error('Failed to connect via Bluetooth');
+          logMessage('Failed to connect via Bluetooth', 'error');
+          updateStatus('Connection failed', 'error');
         }
       } catch (error) {
-        console.error('Error connecting via Bluetooth:', error);
+        logMessage(`Error connecting via Bluetooth: ${error.message}`, 'error');
+        updateStatus(`Error: ${error.message}`, 'error');
       }
     });
     
-    document.getElementById('connectSerial').addEventListener('click', async () => {
+    connectSerialBtn.addEventListener('click', async () => {
       try {
+        logMessage('Connecting via Serial...', 'info');
+        updateStatus('Connecting...', 'disconnected');
+        
         const success = await gnss.connectSerial();
+        
         if (!success) {
-          console.error('Failed to connect via Serial');
+          logMessage('Failed to connect via Serial', 'error');
+          updateStatus('Connection failed', 'error');
         }
       } catch (error) {
-        console.error('Error connecting via Serial:', error);
+        logMessage(`Error connecting via Serial: ${error.message}`, 'error');
+        updateStatus(`Error: ${error.message}`, 'error');
       }
     });
     
-    document.getElementById('disconnectDevice').addEventListener('click', async () => {
+    disconnectBtn.addEventListener('click', async () => {
       try {
+        logMessage('Disconnecting device...', 'info');
         await gnss.disconnectDevice();
       } catch (error) {
-        console.error('Error disconnecting device:', error);
+        logMessage(`Error disconnecting device: ${error.message}`, 'error');
       }
     });
     
-    document.getElementById('connectNtrip').addEventListener('click', async () => {
+    connectNtripBtn.addEventListener('click', () => {
+      ntripFormEl.style.display = 'block';
+      connectNtripBtn.disabled = true;
+    });
+    
+    ntripConnectBtn.addEventListener('click', async () => {
       try {
-        // Show a simple form to input NTRIP details
-        const host = prompt('NTRIP Host:', 'rtk2go.com');
-        const port = prompt('NTRIP Port:', '2101');
-        const mountpoint = prompt('NTRIP Mountpoint:');
-        const username = prompt('NTRIP Username (optional):');
-        const password = prompt('NTRIP Password (optional):');
+        const host = ntripHostInput.value.trim();
+        const port = parseInt(ntripPortInput.value.trim(), 10);
+        const mountpoint = ntripMountpointInput.value.trim();
+        const username = ntripUsernameInput.value.trim();
+        const password = ntripPasswordInput.value.trim();
         
         if (!host || !mountpoint) {
-          alert('Host and mountpoint are required');
+          logMessage('NTRIP host and mountpoint are required', 'error');
           return;
         }
         
+        ntripFormEl.style.display = 'none';
+        
+        logMessage(`Connecting to NTRIP server: ${host}:${port}/${mountpoint}...`, 'info');
+        updateNtripStatus('Connecting...', 'disconnected');
+        
         const success = await gnss.connectNtrip({
           host,
-          port: parseInt(port, 10),
+          port,
           mountpoint,
-          username,
-          password
+          username: username || undefined,
+          password: password || undefined
         });
         
         if (!success) {
-          console.error('Failed to connect to NTRIP');
+          logMessage('Failed to connect to NTRIP server', 'error');
+          updateNtripStatus('Connection failed', 'error');
+          connectNtripBtn.disabled = false;
         }
       } catch (error) {
-        console.error('Error connecting to NTRIP:', error);
+        logMessage(`Error connecting to NTRIP: ${error.message}`, 'error');
+        updateNtripStatus(`Error: ${error.message}`, 'error');
+        connectNtripBtn.disabled = false;
       }
     });
     
-    document.getElementById('disconnectNtrip').addEventListener('click', async () => {
+    ntripCancelBtn.addEventListener('click', () => {
+      ntripFormEl.style.display = 'none';
+      connectNtripBtn.disabled = false;
+    });
+    
+    disconnectNtripBtn.addEventListener('click', async () => {
       try {
+        logMessage('Disconnecting from NTRIP server...', 'info');
         await gnss.disconnectNtrip();
       } catch (error) {
-        console.error('Error disconnecting from NTRIP:', error);
+        logMessage(`Error disconnecting from NTRIP: ${error.message}`, 'error');
       }
     });
+    
+    // Log startup
+    logMessage('gnss.js Basic Usage Example initialized', 'info');
   </script>
 </body>
 </html>

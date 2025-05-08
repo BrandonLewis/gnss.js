@@ -16,7 +16,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint 'src/**/*.js'",
     "docs": "jsdoc -c jsdoc.config.json",
-    "prepublishOnly": "npm run lint && npm run build"
+    "prepublishOnly": "npm run lint && npm run build",
+    "serve": "node server.js"
   },
   "keywords": [
     "gnss",
