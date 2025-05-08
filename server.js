@@ -93,6 +93,18 @@ const server = https.createServer(options, (req, res) => {
           <a href="/examples/connection-diagnostics.html" class="button">Open Diagnostic Tool</a>
         </div>
         
+        <div class="card">
+          <h2>Device Settings</h2>
+          <p>A tool for configuring device-specific parameters and saving them for future use. Supports common device presets and custom configurations.</p>
+          <a href="/examples/device-settings.html" class="button">Open Device Settings</a>
+        </div>
+        
+        <div class="card">
+          <h2>NMEA Parser Test</h2>
+          <p>A testing utility for the NMEA parser. You can test parsing of NMEA sentences and see the parsed results.</p>
+          <a href="/examples/nmea-parser-test.html" class="button">Open NMEA Parser Test</a>
+        </div>
+        
         <p><small>Note: You will need to accept the self-signed certificate warning in your browser.</small></p>
       </body>
       </html>
