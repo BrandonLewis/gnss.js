@@ -42,11 +42,15 @@
   },
   "homepage": "https://github.com/yourusername/gnss.js#readme",
   "devDependencies": {
-    "eslint": "^8.45.0",
+    "@eslint/config-array": "^0.20.0",
+    "@eslint/object-schema": "^2.1.6",
+    "@rollup/plugin-terser": "^0.4.3",
+    "eslint": "^9.26.0",
+    "glob": "^11.0.2",
     "jsdoc": "^4.0.2",
-    "jsdoc-to-markdown": "^8.0.0",
-    "rollup": "^3.26.2",
-    "rollup-plugin-terser": "^7.0.2"
+    "jsdoc-to-markdown": "^9.1.1",
+    "rimraf": "^6.0.1",
+    "rollup": "^3.26.2"
   },
   "engines": {
     "node": ">=14.0.0"

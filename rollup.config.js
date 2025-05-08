@@ -1,5 +1,8 @@
-import { terser } from 'rollup-plugin-terser';
-import pkg from './package.json' assert { type: 'json' };
+import terser from '@rollup/plugin-terser';
+import { readFileSync } from 'fs';
+
+// Read package.json
+const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url)));
 
 // Banner for the builds
 const banner = `/**
@@ -22,7 +25,7 @@ export default [
       name: 'GnssModule',
       banner,
       sourcemap: true,
-      plugins: [terser()]
+      plugins: [terser]
     }
   },
   // UMD build for browsers (development, non-minified)

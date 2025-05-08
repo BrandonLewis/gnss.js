@@ -29,6 +29,8 @@ yarn add gnss.js
 
 ### Browser (CDN)
 
+#### Using unpkg
+
 ```html
 <!-- UMD build (development) -->
 <script src="https://unpkg.com/gnss.js/dist/gnss.js"></script>
@@ -39,6 +41,24 @@ yarn add gnss.js
 <!-- ESM build for modern browsers -->
 <script type="module">
   import { GnssModule } from 'https://unpkg.com/gnss.js/dist/gnss.esm.js';
+</script>
+```
+
+#### Using jsDelivr (GitHub)
+
+```html
+<!-- Latest version (development) -->
+<script src="https://cdn.jsdelivr.net/gh/your-username/gnss.js@latest/dist/gnss.js"></script>
+
+<!-- Latest version (production, minified) -->
+<script src="https://cdn.jsdelivr.net/gh/your-username/gnss.js@latest/dist/gnss.min.js"></script>
+
+<!-- Specific version (recommended for production) -->
+<script src="https://cdn.jsdelivr.net/gh/your-username/gnss.js@0.1.0/dist/gnss.min.js"></script>
+
+<!-- ESM build for modern browsers -->
+<script type="module">
+  import { GnssModule } from 'https://cdn.jsdelivr.net/gh/your-username/gnss.js@latest/dist/gnss.esm.js';
 </script>
 ```
 
