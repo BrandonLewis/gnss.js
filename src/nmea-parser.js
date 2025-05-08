@@ -241,7 +241,7 @@ export class NmeaParser {
         case 'GLVTG':
           result = this.parseVTG(parts);
           break;
-        default:
+        default: {
           // For unknown sentence types, extract the last part of the type
           // Common prefixes: GP = GPS, GN = GNSS, BD = BeiDou, GL = GLONASS, GA = Galileo
           const match = sentenceType.match(/^(GP|GN|BD|GL|GA)(.+)$/);
@@ -252,6 +252,7 @@ export class NmeaParser {
             raw: sentence
           };
           break;
+        }
       }
       
       // Add raw data for reference

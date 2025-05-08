@@ -14,6 +14,7 @@ import { BluetoothHandler } from './connection/bluetooth-handler.js';
 import { SerialHandler } from './connection/serial-handler.js';
 import { RtkSettings } from './ui/rtk-settings.js'; 
 import { RtkStatus } from './ui/rtk-status.js';
+import { DeviceSettings } from './ui/device-settings.js';
 
 /**
  * Main GNSS Module class
@@ -81,6 +82,12 @@ class GnssModule {
         events: this.events,
         selector: options.rtkStatusSelector
       });
+      
+      this.deviceSettings = new DeviceSettings({
+        events: this.events,
+        settings: this.settings,
+        selector: options.deviceSettingsSelector
+      });
     }
     
     // Last known position
@@ -112,6 +119,11 @@ class GnssModule {
       if (this.connectionManager.isConnected()) {
         this.connectionManager.sendData(rtcmData.data);
       }
+    });
+    
+    // Handle device settings application request
+    this.events.on('device:apply:settings', (settings) => {
+      this.configureDevice(settings);
     });
   }
   
@@ -271,6 +283,49 @@ class GnssModule {
   }
   
   /**
+   * Configure the device with specified settings
+   * @param {Object} settings - Device settings to apply
+   * @returns {Promise<boolean>} Success flag
+   */
+  async configureDevice(settings = {}) {
+    try {
+      // Check if connected
+      if (!this.connectionManager.isConnected()) {
+        this.events.emit('device:error', { message: 'Not connected to any device' });
+        return false;
+      }
+      
+      // If no settings provided, use saved device settings
+      const deviceSettings = settings.gnssSystems ? 
+        settings : 
+        this.settings.getSection('device');
+      
+      // Emit event before applying settings
+      this.events.emit('device:configuring', { settings: deviceSettings });
+      
+      // Currently this is a placeholder - in a real implementation, 
+      // you would send configuration commands to the device
+      // For example, with u-blox devices, you'd send UBX configuration messages
+      
+      // For now, we'll just simulate a successful configuration
+      setTimeout(() => {
+        this.events.emit('device:configured', { 
+          settings: deviceSettings,
+          success: true
+        });
+      }, 1000);
+      
+      return true;
+    } catch (error) {
+      this.events.emit('device:error', { 
+        message: 'Error configuring device',
+        error
+      });
+      return false;
+    }
+  }
+  
+  /**
    * Subscribe to an event
    * @param {string} event - Event name
    * @param {Function} callback - Callback function
@@ -304,6 +359,7 @@ export { BluetoothHandler };
 export { SerialHandler };
 export { RtkSettings };
 export { RtkStatus };
+export { DeviceSettings };
 
 // Export default GnssModule for backward compatibility
 export default GnssModule;
