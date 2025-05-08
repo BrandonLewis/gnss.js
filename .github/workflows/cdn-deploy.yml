@@ -24,6 +24,11 @@ jobs:
       - name: Build
         run: npm run build
         
+      - name: Generate docs
+        run: |
+          npm install clean-jsdoc-theme
+          npm run docs
+        
       - name: Create CDN branch if not exists
         run: |
           git config --global user.name "GitHub Actions"
@@ -41,22 +46,24 @@ jobs:
             git checkout cdn-dist
           fi
         
-      - name: Copy dist files to cdn-dist branch
+      - name: Copy dist and docs files to cdn-dist branch
         run: |
-          # Save the dist directory
-          mkdir -p /tmp/dist
+          # Save the dist and docs directories
+          mkdir -p /tmp/dist /tmp/docs
           cp -r dist/* /tmp/dist/
+          cp -r docs/* /tmp/docs/
           
           # Clear existing files but keep .git directory
           find . -mindepth 1 -not -path "./.git*" -delete
           
-          # Copy dist directory back
-          mkdir -p dist
+          # Copy dist and docs directories back
+          mkdir -p dist docs
           cp -r /tmp/dist/* dist/
+          cp -r /tmp/docs/* docs/
           
           # Add and commit changes
-          git add dist
-          git commit -m "Update CDN files for tag ${{ github.ref_name }}"
+          git add dist docs
+          git commit -m "Update CDN files and docs for tag ${{ github.ref_name }}"
           git push origin cdn-dist
 
       - name: Update latest tag

@@ -29,6 +29,11 @@ jobs:
       - name: Build
         run: npm run build
         
+      - name: Generate docs
+        run: |
+          npm install clean-jsdoc-theme
+          npm run docs
+        
       - name: Semantic Release
         id: semantic
         env:

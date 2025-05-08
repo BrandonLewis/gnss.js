@@ -189,7 +189,9 @@ gnss.on('satellites', (satellites) => {
 
 ## API Documentation
 
-Detailed API documentation is available at [https://yourusername.github.io/gnss.js](https://yourusername.github.io/gnss.js).
+Detailed API documentation is available at:
+- GitHub Pages: [https://brandonlewis.github.io/gnss.js](https://brandonlewis.github.io/gnss.js)
+- CDN Documentation: [https://cdn.jsdelivr.net/gh/BrandonLewis/gnss.js@cdn-dist/docs/index.html](https://cdn.jsdelivr.net/gh/BrandonLewis/gnss.js@cdn-dist/docs/index.html)
 
 ## Examples
 

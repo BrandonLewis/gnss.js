@@ -6,7 +6,11 @@
   "opts": {
     "destination": "./docs/",
     "recurse": true,
-    "template": "node_modules/better-docs"
+    "template": "node_modules/clean-jsdoc-theme",
+    "theme_opts": {
+      "default_theme": "dark",
+      "homepageTitle": "GNSS.js Documentation"
+    }
   },
   "plugins": [
     "plugins/markdown"
