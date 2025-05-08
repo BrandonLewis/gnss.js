@@ -18,6 +18,9 @@ export class NmeaParser {
     };
     this.lastSentenceTime = Date.now();
     
+    // Store the event emitter if provided
+    this.events = options.events || null;
+    
     // Debug settings
     this.debug = options.debug || { 
       info: false,
@@ -75,17 +78,29 @@ export class NmeaParser {
     this.buffer += stringData;
     return this.processBuffer();
   }
+  
+  /**
+   * Alias for parseData for backward compatibility
+   * @param {string|ArrayBuffer} data - Raw data from receiver
+   * @returns {Object} Parsed NMEA data
+   */
+  parse(data) {
+    return this.parseData(data);
+  }
 
   /**
    * Process the current buffer for complete NMEA sentences
    * @returns {Object[]} Array of parsed NMEA objects
    */
   processBuffer() {
-    const sentences = this.buffer.split('\r\n');
+    // Handle different line endings (CRLF, LF, CR)
+    const sentences = this.buffer.split(/\r\n|\n|\r/);
     // Keep the last potentially incomplete sentence in the buffer
-    this.buffer = sentences.pop();
+    this.buffer = sentences.pop() || '';
     
     const results = [];
+    let positionUpdated = false;
+    let satellitesUpdated = false;
     
     for (const sentence of sentences) {
       if (sentence.trim() === '') continue;
@@ -94,9 +109,40 @@ export class NmeaParser {
         const parsed = this.parseSentence(sentence);
         if (parsed) {
           results.push(parsed);
+          
+          // Check if position data has been updated
+          if ((parsed.type === 'GGA' || parsed.type === 'RMC') && this.lastPosition) {
+            positionUpdated = true;
+          }
+          
+          // Check if satellite data has been updated
+          if (parsed.type === 'GSV' && parsed.messageNumber === parsed.totalMessages) {
+            satellitesUpdated = true;
+          }
         }
       } catch (error) {
         this.logger.error('Error parsing NMEA sentence:', error, sentence);
+      }
+    }
+    
+    // Emit position event if we have new position data and an event emitter
+    if (positionUpdated && this.events) {
+      const position = this.getPosition();
+      if (position) {
+        // Add a timestamp for convenience
+        const positionWithTimestamp = {
+          ...position,
+          timestamp: new Date()
+        };
+        this.events.emit('nmea:position', positionWithTimestamp);
+      }
+    }
+    
+    // Emit satellites event if we have new satellite data and an event emitter
+    if (satellitesUpdated && this.events) {
+      const satellites = this.getSatellites();
+      if (satellites && satellites.length > 0) {
+        this.events.emit('nmea:satellites', satellites);
       }
     }
     
@@ -109,87 +155,132 @@ export class NmeaParser {
    * @returns {Object|null} Parsed data or null if invalid
    */
   parseSentence(sentence) {
-    // Basic validation
-    if (!sentence.startsWith('$') || sentence.length < 9) {
-      this.logger.debug('Invalid NMEA sentence format:', sentence);
-      return null;
-    }
-    
-    // Check checksum
-    if (!this.validateChecksum(sentence)) {
-      this.logger.debug('Invalid NMEA checksum:', sentence);
-      return null;
-    }
-    
-    // Log raw sentence for debugging
-    this.logger.parsedSentence('Valid NMEA sentence:', sentence);
-    
-    // Split the sentence by commas, removing the '$' and checksum
-    let parts = sentence.substring(1, sentence.indexOf('*')).split(',');
-    const sentenceType = parts[0];
-    
-    // Extract type without prefix (e.g., GPGGA -> GGA)
-    const typeWithoutPrefix = sentenceType.substring(2);
-    this.logger.parsedSentence(`Parsing NMEA sentence type: ${sentenceType} (${typeWithoutPrefix})`);
-    
-    // Parse different sentence types
-    let result;
-    switch (sentenceType) {
-      case 'GPGGA':
-      case 'GNGGA':
-        result = this.parseGGA(parts);
-        break;
-      case 'GPGSA':
-      case 'GNGSA':
-        result = this.parseGSA(parts);
-        break;
-      case 'GPGSV':
-      case 'GNGSV':
-        result = this.parseGSV(parts);
-        break;
-      case 'GPRMC':
-      case 'GNRMC':
-        result = this.parseRMC(parts);
-        break;
-      case 'GPGST':
-      case 'GNGST':
-        result = this.parseGST(parts);
-        break;
-      case 'GPVTG':
-      case 'GNVTG':
-        result = this.parseVTG(parts);
-        break;
-      default:
-        result = {
-          type: typeWithoutPrefix,
-          raw: sentence
-        };
-        break;
-    }
-    
-    // Add raw data for reference
-    if (result) {
-      result.raw = sentence;
+    try {
+      // Basic validation
+      if (!sentence || typeof sentence !== 'string') {
+        this.logger.debug('Invalid NMEA sentence (not a string):', sentence);
+        return null;
+      }
       
-      // Update sentence statistics
-      if (result.type) {
-        if (this.sentenceStats.hasOwnProperty(result.type)) {
-          this.sentenceStats[result.type]++;
-        } else {
-          this.sentenceStats.UNKNOWN++;
+      sentence = sentence.trim();
+      
+      if (!sentence.startsWith('$') || sentence.length < 9) {
+        this.logger.debug('Invalid NMEA sentence format:', sentence);
+        return null;
+      }
+      
+      // Check for checksum
+      const asteriskIndex = sentence.indexOf('*');
+      if (asteriskIndex === -1) {
+        this.logger.debug('Missing checksum in NMEA sentence:', sentence);
+        return null;
+      }
+      
+      // Check checksum
+      if (!this.validateChecksum(sentence)) {
+        this.logger.debug('Invalid NMEA checksum:', sentence);
+        return null;
+      }
+      
+      // Log raw sentence for debugging
+      this.logger.parsedSentence('Valid NMEA sentence:', sentence);
+      
+      // Split the sentence by commas, removing the '$' and checksum
+      let parts = sentence.substring(1, asteriskIndex).split(',');
+      if (parts.length < 1) {
+        this.logger.debug('Invalid NMEA sentence structure:', sentence);
+        return null;
+      }
+      
+      const sentenceType = parts[0];
+      if (!sentenceType || sentenceType.length < 3) {
+        this.logger.debug('Invalid NMEA sentence type:', sentenceType);
+        return null;
+      }
+      
+      // Extract type without prefix (e.g., GPGGA -> GGA)
+      const typeWithoutPrefix = sentenceType.substring(2);
+      this.logger.parsedSentence(`Parsing NMEA sentence type: ${sentenceType} (${typeWithoutPrefix})`);
+      
+      // Parse different sentence types
+      let result;
+      switch (sentenceType) {
+        case 'GPGGA':
+        case 'GNGGA':
+        case 'BDGGA':
+        case 'GLGGA':
+          result = this.parseGGA(parts);
+          break;
+        case 'GPGSA':
+        case 'GNGSA':
+        case 'BDGSA':
+        case 'GLGSA':
+          result = this.parseGSA(parts);
+          break;
+        case 'GPGSV':
+        case 'GNGSV':
+        case 'BDGSV':
+        case 'GLGSV':
+          result = this.parseGSV(parts);
+          break;
+        case 'GPRMC':
+        case 'GNRMC':
+        case 'BDRMC':
+        case 'GLRMC':
+          result = this.parseRMC(parts);
+          break;
+        case 'GPGST':
+        case 'GNGST':
+        case 'BDGST':
+        case 'GLGST':
+          result = this.parseGST(parts);
+          break;
+        case 'GPVTG':
+        case 'GNVTG':
+        case 'BDVTG':
+        case 'GLVTG':
+          result = this.parseVTG(parts);
+          break;
+        default:
+          // For unknown sentence types, extract the last part of the type
+          // Common prefixes: GP = GPS, GN = GNSS, BD = BeiDou, GL = GLONASS, GA = Galileo
+          const match = sentenceType.match(/^(GP|GN|BD|GL|GA)(.+)$/);
+          const type = match ? match[2] : typeWithoutPrefix;
+          
+          result = {
+            type,
+            raw: sentence
+          };
+          break;
+      }
+      
+      // Add raw data for reference
+      if (result) {
+        result.raw = sentence;
+        
+        // Update sentence statistics
+        if (result.type) {
+          if (this.sentenceStats.hasOwnProperty(result.type)) {
+            this.sentenceStats[result.type]++;
+          } else {
+            this.sentenceStats.UNKNOWN++;
+          }
         }
+        
+        // Calculate data rate
+        const now = Date.now();
+        const elapsed = now - this.lastSentenceTime;
+        if (elapsed > 0) {
+          result.dataRate = parseFloat((1000 / elapsed).toFixed(2)); // sentences per second
+        }
+        this.lastSentenceTime = now;
       }
       
-      // Calculate data rate
-      const now = Date.now();
-      const elapsed = now - this.lastSentenceTime;
-      if (elapsed > 0) {
-        result.dataRate = 1000 / elapsed; // sentences per second
-      }
-      this.lastSentenceTime = now;
+      return result;
+    } catch (error) {
+      this.logger.error('Unexpected error parsing NMEA sentence:', error, sentence);
+      return null;
     }
-    
-    return result;
   }
 
   /**
@@ -224,10 +315,27 @@ export class NmeaParser {
   parseGGA(parts) {
     const latitude = this.parseLatitude(parts[2], parts[3]);
     const longitude = this.parseLongitude(parts[4], parts[5]);
+    const fixQuality = parseInt(parts[6] || '0');
+    const satellites = parseInt(parts[7] || '0');
+    const hdop = parseFloat(parts[8] || '0');
+    const altitude = parts[9] ? parseFloat(parts[9]) : null;
     
-    // Update the last position if valid
+    // Update the last position if coordinates are valid
     if (latitude !== null && longitude !== null) {
-      this.lastPosition = { latitude, longitude };
+      this.lastPosition = { 
+        latitude, 
+        longitude,
+        fixQuality,
+        satellites,
+        hdop,
+        altitude,
+        // Add other position details
+        altitudeUnits: parts[10],
+        geoidHeight: parts[11] ? parseFloat(parts[11]) : null,
+        geoidHeightUnits: parts[12],
+        dgpsAge: parts[13] ? parseFloat(parts[13]) : null,
+        dgpsStation: parts[14]
+      };
     }
     
     return {
@@ -235,10 +343,10 @@ export class NmeaParser {
       time: parts[1],
       latitude,
       longitude,
-      fixQuality: parseInt(parts[6] || '0'),
-      satellites: parseInt(parts[7] || '0'),
-      hdop: parseFloat(parts[8] || '0'),
-      altitude: parts[9] ? parseFloat(parts[9]) : null,
+      fixQuality,
+      satellites,
+      hdop,
+      altitude,
       altitudeUnits: parts[10],
       geoidHeight: parts[11] ? parseFloat(parts[11]) : null,
       geoidHeightUnits: parts[12],
@@ -340,6 +448,8 @@ export class NmeaParser {
   parseRMC(parts) {
     const latitude = this.parseLatitude(parts[3], parts[4]);
     const longitude = this.parseLongitude(parts[5], parts[6]);
+    const speed = parts[7] ? parseFloat(parts[7]) : null; // Speed over ground in knots
+    const course = parts[8] ? parseFloat(parts[8]) : null; // Course in degrees
     
     // Extract date components
     let date = null;
@@ -359,9 +469,25 @@ export class NmeaParser {
       time = `${hours}:${minutes}:${seconds}`;
     }
     
-    // Update the last position if valid
-    if (latitude !== null && longitude !== null) {
-      this.lastPosition = { latitude, longitude };
+    // Update the last position if coordinates are valid and status is active
+    if (latitude !== null && longitude !== null && parts[2] === 'A') {
+      // Preserve the existing data like altitude and fix quality
+      // that might have come from GGA sentences
+      const currentPosition = this.lastPosition || {};
+      
+      this.lastPosition = { 
+        ...currentPosition,
+        latitude, 
+        longitude,
+        // Add RMC-specific data
+        status: parts[2],
+        speed,
+        course,
+        date,
+        time,
+        // The RMC sentence has a mode indicator too
+        mode: parts[12]
+      };
     }
     
     return {
@@ -370,8 +496,8 @@ export class NmeaParser {
       status: parts[2], // A=active, V=void
       latitude,
       longitude,
-      speed: parts[7] ? parseFloat(parts[7]) : null, // Speed over ground in knots
-      course: parts[8] ? parseFloat(parts[8]) : null, // Course in degrees
+      speed, // Speed over ground in knots
+      course, // Course in degrees
       date,
       magneticVariation: parts[10] ? parseFloat(parts[10]) : null,
       magneticVariationDirection: parts[11],
@@ -429,17 +555,22 @@ export class NmeaParser {
       return null;
     }
     
-    // NMEA format: DDMM.MMMM
-    const degrees = parseInt(value.substring(0, 2));
-    const minutes = parseFloat(value.substring(2));
-    let latitude = degrees + (minutes / 60);
-    
-    // Apply direction
-    if (direction === 'S') {
-      latitude = -latitude;
+    try {
+      // NMEA format: DDMM.MMMM
+      const degrees = parseInt(value.substring(0, 2));
+      const minutes = parseFloat(value.substring(2));
+      let latitude = degrees + (minutes / 60);
+      
+      // Apply direction
+      if (direction === 'S') {
+        latitude = -latitude;
+      }
+      
+      return parseFloat(latitude.toFixed(6));
+    } catch (error) {
+      this.logger.error('Error parsing latitude:', error, value, direction);
+      return null;
     }
-    
-    return latitude;
   }
 
   /**
@@ -453,25 +584,49 @@ export class NmeaParser {
       return null;
     }
     
-    // NMEA format: DDDMM.MMMM
-    const degrees = parseInt(value.substring(0, 3));
-    const minutes = parseFloat(value.substring(3));
-    let longitude = degrees + (minutes / 60);
-    
-    // Apply direction
-    if (direction === 'W') {
-      longitude = -longitude;
+    try {
+      // NMEA format: DDDMM.MMMM
+      const degrees = parseInt(value.substring(0, 3));
+      const minutes = parseFloat(value.substring(3));
+      let longitude = degrees + (minutes / 60);
+      
+      // Apply direction
+      if (direction === 'W') {
+        longitude = -longitude;
+      }
+      
+      return parseFloat(longitude.toFixed(6));
+    } catch (error) {
+      this.logger.error('Error parsing longitude:', error, value, direction);
+      return null;
     }
-    
-    return longitude;
   }
 
   /**
    * Get the current position
-   * @returns {Object|null} Current position
+   * @returns {Object|null} Current position with latitude, longitude, altitude, quality, etc.
    */
   getPosition() {
-    return this.lastPosition;
+    if (!this.lastPosition) {
+      return null;
+    }
+    
+    // Create a complete position object
+    return {
+      latitude: this.lastPosition.latitude,
+      longitude: this.lastPosition.longitude,
+      altitude: this.lastPosition.altitude || null,
+      // Include fix quality from GGA if available
+      quality: this.lastPosition.fixQuality || 0,
+      // Include satellite count
+      satellites: this.lastPosition.satellites || 0,
+      // Include HDOP if available
+      hdop: this.lastPosition.hdop || null,
+      // Include speed if available (from RMC)
+      speed: this.lastPosition.speed || null,
+      // Include course if available (from RMC)
+      course: this.lastPosition.course || null,
+    };
   }
 
   /**
@@ -479,7 +634,12 @@ export class NmeaParser {
    * @returns {Object[]|null} Satellite information
    */
   getSatellites() {
-    return this.lastSatellites;
+    if (!this.lastSatellites || this.lastSatellites.length === 0) {
+      return [];
+    }
+    
+    // Return a clone of the satellites array so external code cannot modify our internal state
+    return [...this.lastSatellites];
   }
   
   /**

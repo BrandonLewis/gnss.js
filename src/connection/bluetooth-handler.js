@@ -42,28 +42,33 @@ export class BluetoothHandler extends ConnectionHandler {
     
     // Common BLE characteristic UUIDs
     // Nordic UART (nRF UART) characteristic UUIDs - very common in BLE devices
-    this.NORDIC_TX_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e'; // TX (device transmits to phone)
-    this.NORDIC_RX_UUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e'; // RX (phone transmits to device)
+    // IMPORTANT: The naming can be confusing:
+    // TX from the device perspective = RX from our perspective (we receive data the device transmits)
+    // RX from the device perspective = TX from our perspective (we transmit data the device receives)
+    this.NORDIC_RX_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e'; // RX (we receive data from device) - has NOTIFY
+    this.NORDIC_TX_UUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e'; // TX (we transmit data to device) - has WRITE
     
     // Common alternate BLE characteristic UUIDs
+    // These are characteristics where WE TRANSMIT TO the device
     this.BLE_TX_UUIDS = [
       // Nordic UART variants
-      '6e400002-b5a3-f393-e0a9-e50e24dcca9e', // Nordic TX
-      '0000ffe1-0000-1000-8000-00805f9b34fb', // Common BLE TX
-      '0000fff1-0000-1000-8000-00805f9b34fb', // HC-08 TX
-      '49535343-8841-43f4-a8d4-ecbe34729bb3', // HM-10 TX
+      '6e400003-b5a3-f393-e0a9-e50e24dcca9e', // Nordic TX - we write to this one
+      '0000ffe2-0000-1000-8000-00805f9b34fb', // Common BLE TX
+      '0000fff2-0000-1000-8000-00805f9b34fb', // HC-08 TX
+      '49535343-1e4d-4bd9-ba61-23c647249616', // HM-10 TX
       // SparkFun might use a custom characteristic
-      '0000fe9a-0002-1000-8000-00805f9b34fb'  // Possible custom TX
+      '0000fe9a-0003-1000-8000-00805f9b34fb'  // Possible custom TX
     ];
     
+    // These are characteristics where WE RECEIVE FROM the device
     this.BLE_RX_UUIDS = [
       // Nordic UART variants
-      '6e400003-b5a3-f393-e0a9-e50e24dcca9e', // Nordic RX
-      '0000ffe2-0000-1000-8000-00805f9b34fb', // Common BLE RX
-      '0000fff2-0000-1000-8000-00805f9b34fb', // HC-08 RX
-      '49535343-1e4d-4bd9-ba61-23c647249616', // HM-10 RX
+      '6e400002-b5a3-f393-e0a9-e50e24dcca9e', // Nordic RX - we read from this one
+      '0000ffe1-0000-1000-8000-00805f9b34fb', // Common BLE RX
+      '0000fff1-0000-1000-8000-00805f9b34fb', // HC-08 RX
+      '49535343-8841-43f4-a8d4-ecbe34729bb3', // HM-10 RX
       // SparkFun might use a custom characteristic
-      '0000fe9a-0003-1000-8000-00805f9b34fb'  // Possible custom RX
+      '0000fe9a-0002-1000-8000-00805f9b34fb'  // Possible custom RX
     ];
     
     // Legacy names for backward compatibility 
@@ -135,8 +140,15 @@ export class BluetoothHandler extends ConnectionHandler {
         throw new Error('Web Bluetooth API is not supported in this browser');
       }
       
+      // Debug logging
+      console.log('BluetoothHandler.connect called with options:', JSON.stringify(options));
+      
+      // List all services we're requesting access to
+      console.log('Available service UUIDs:', this.SERVICE_UUIDS);
+      
       // Check if this is a SparkFun device connection
       if (options.sparkfun) {
+        console.log('Using SparkFun device connection method');
         // Use our special SparkFun connection method
         return this.connectToSparkFunFacet(options);
       }
@@ -145,30 +157,42 @@ export class BluetoothHandler extends ConnectionHandler {
       const requestOptions = {
         acceptAllDevices: !options.filters,
         filters: options.filters || [],
-        optionalServices: [this.SPP_SERVICE_UUID]
+        optionalServices: this.SERVICE_UUIDS // Include all possible service UUIDs
       };
       
-      // Try to get device ID from options or Bluetooth section
-      const deviceId = options.deviceId || 
-                      (options.bluetooth && options.bluetooth.lastDeviceId);
+      console.log('Calling navigator.bluetooth.requestDevice with options:', JSON.stringify(requestOptions));
       
-      // Allow connecting to last device
-      if (deviceId) {
-        try {
-          this.device = await navigator.bluetooth.getDevices()
-            .then(devices => devices.find(d => d.id === deviceId));
-            
-          if (!this.device) {
-            throw new Error('Device not found');
+      // Check if a device object was directly passed (from GnssModule.connectBluetooth)
+      if (options.deviceObj) {
+        console.log('Using device object passed from GnssModule:', options.deviceObj.name || options.deviceObj.id);
+        this.device = options.deviceObj;
+      }
+      // Try to get device ID from options or Bluetooth section (legacy path)
+      else if (typeof navigator.bluetooth.getDevices === 'function') {
+        const deviceId = options.deviceId || 
+                        (options.bluetooth && options.bluetooth.lastDeviceId);
+        
+        // Allow connecting to last device
+        if (deviceId) {
+          try {
+            this.device = await navigator.bluetooth.getDevices()
+              .then(devices => devices.find(d => d.id === deviceId));
+              
+            if (!this.device) {
+              throw new Error('Device not found');
+            }
+          } catch (error) {
+            this.logger.debug('Failed to reconnect to known device:', error);
+            // This path should not be reached with the updated flow
+            throw new Error('Device selection must happen in GnssModule.connectBluetooth');
           }
-        } catch (error) {
-          this.logger.debug('Failed to reconnect to known device:', error);
-          // Fall back to device picker
-          this.device = await navigator.bluetooth.requestDevice(requestOptions);
+        } else {
+          // This path should not be reached with the updated flow
+          throw new Error('Device selection must happen in GnssModule.connectBluetooth');
         }
       } else {
-        // Show the device picker
-        this.device = await navigator.bluetooth.requestDevice(requestOptions);
+        // This path should not be reached with the updated flow
+        throw new Error('Device selection must happen in GnssModule.connectBluetooth');
       }
       
       if (!this.device) {
@@ -344,34 +368,86 @@ export class BluetoothHandler extends ConnectionHandler {
       if (!this.rxCharacteristic || !this.txCharacteristic) {
         this.logger.debug('No known characteristic pair found, detecting based on properties');
         
+        // First log all available characteristics with their properties for debugging
+        characteristics.forEach(char => {
+          const props = Object.keys(char.properties).filter(p => char.properties[p]).join(', ');
+          this.logger.debug(`Characteristic ${char.uuid} has properties: ${props}`);
+        });
+        
         // Look for characteristics with the right properties for RX/TX
-        // RX: needs notify (for receiving data from device)
-        // TX: needs write (for sending data to device)
+        // RX (from device to us): needs notify or read
+        // TX (from us to device): needs write or writeWithoutResponse
         const notifyChars = characteristics.filter(char => char.properties.notify);
-        const writeChars = characteristics.filter(char => char.properties.write || char.properties.writeWithoutResponse);
+        const readChars = characteristics.filter(char => char.properties.read);
+        const writeChars = characteristics.filter(char => 
+            char.properties.write || char.properties.writeWithoutResponse);
         
-        this.logger.debug(`Found ${notifyChars.length} notify characteristics and ${writeChars.length} write characteristics`);
+        this.logger.debug(`Found ${notifyChars.length} notify, ${readChars.length} read, and ${writeChars.length} write characteristics`);
         
+        // Prefer notify characteristics for receiving data (our RX)
         if (notifyChars.length > 0) {
           this.rxCharacteristic = notifyChars[0];
-          this.logger.debug(`Using RX characteristic with UUID: ${this.rxCharacteristic.uuid}`);
-        } else if (characteristics.length > 0) {
-          // Fallback to first characteristic if no notify characteristics
+          this.logger.debug(`Using RX characteristic with notify: ${this.rxCharacteristic.uuid}`);
+        } 
+        // Fall back to read characteristics if no notify is available
+        else if (readChars.length > 0) {
+          this.rxCharacteristic = readChars[0];
+          this.logger.debug(`Using RX characteristic with read: ${this.rxCharacteristic.uuid}`);
+        } 
+        // Last resort - use any available characteristic
+        else if (characteristics.length > 0) {
           this.rxCharacteristic = characteristics[0];
-          this.logger.debug(`Using fallback RX characteristic with UUID: ${this.rxCharacteristic.uuid}`);
+          this.logger.debug(`Using fallback RX characteristic: ${this.rxCharacteristic.uuid}`);
+          this.logger.warn('This characteristic may not support notifications or reading');
         }
         
+        // For TX, we need a characteristic we can write to
         if (writeChars.length > 0) {
-          this.txCharacteristic = writeChars[0];
-          this.logger.debug(`Using TX characteristic with UUID: ${this.txCharacteristic.uuid}`);
-        } else if (characteristics.length > 1) {
-          // Fallback to second characteristic if no write characteristics
-          this.txCharacteristic = characteristics[1] || characteristics[0];
-          this.logger.debug(`Using fallback TX characteristic with UUID: ${this.txCharacteristic.uuid}`);
-        } else if (characteristics.length === 1) {
-          // If only one characteristic, use it for both TX and RX
+          // Don't use the same characteristic we're using for RX if possible
+          const uniqueWriteChars = writeChars.filter(char => 
+              this.rxCharacteristic && char.uuid !== this.rxCharacteristic.uuid);
+              
+          if (uniqueWriteChars.length > 0) {
+            this.txCharacteristic = uniqueWriteChars[0];
+          } else {
+            this.txCharacteristic = writeChars[0];
+          }
+          
+          this.logger.debug(`Using TX characteristic with write: ${this.txCharacteristic.uuid}`);
+        } 
+        // If we absolutely must, use any other characteristic as a last resort
+        else if (characteristics.length > 1) {
+          // Try to find a different characteristic than the one used for RX
+          const otherChars = characteristics.filter(char => 
+              this.rxCharacteristic && char.uuid !== this.rxCharacteristic.uuid);
+              
+          if (otherChars.length > 0) {
+            this.txCharacteristic = otherChars[0];
+          } else {
+            this.txCharacteristic = characteristics[1] || characteristics[0];
+          }
+          
+          this.logger.debug(`Using fallback TX characteristic: ${this.txCharacteristic.uuid}`);
+          this.logger.warn('This characteristic may not support writing');
+        } 
+        // If only one characteristic is available, use it for both
+        else if (characteristics.length === 1) {
           this.txCharacteristic = characteristics[0];
           this.logger.debug(`Using single characteristic for both RX and TX: ${this.txCharacteristic.uuid}`);
+          this.logger.warn('Using the same characteristic for both reading and writing');
+        }
+        
+        // Final check to ensure we selected characteristics with the right properties
+        if (this.rxCharacteristic) {
+          const rxProps = Object.keys(this.rxCharacteristic.properties)
+            .filter(p => this.rxCharacteristic.properties[p]).join(', ');
+          this.logger.debug(`Selected RX characteristic ${this.rxCharacteristic.uuid} with properties: ${rxProps}`);
+        }
+        
+        if (this.txCharacteristic) {
+          const txProps = Object.keys(this.txCharacteristic.properties)
+            .filter(p => this.txCharacteristic.properties[p]).join(', ');
+          this.logger.debug(`Selected TX characteristic ${this.txCharacteristic.uuid} with properties: ${txProps}`);
         }
       }
       
@@ -384,61 +460,104 @@ export class BluetoothHandler extends ConnectionHandler {
         throw new Error('Could not find a suitable TX characteristic');
       }
       
-      // Try to start notifications for incoming data
-      // But make this optional - some devices might use a polling approach instead
-      try {
-        this.logger.debug(`Starting notifications on RX characteristic: ${this.rxCharacteristic.uuid}`);
-        this.logger.debug(`RX characteristic properties:`, Object.keys(this.rxCharacteristic.properties).filter(p => this.rxCharacteristic.properties[p]));
-        
-        // Only attempt to start notifications if the characteristic supports it
-        if (this.rxCharacteristic.properties.notify) {
-          await this.rxCharacteristic.startNotifications();
-          this.rxCharacteristic.addEventListener('characteristicvaluechanged', 
-            (event) => this.handleIncomingData(event));
-          this.logger.debug('Notifications started successfully');
-        } else {
-          this.logger.debug('RX characteristic does not support notifications, will use polling instead');
-          // Set up polling for devices that don't support notifications
-          this.pollingEnabled = true;
-          this.pollingInterval = setInterval(async () => {
-            try {
-              // Read the characteristic value manually
-              if (this.isConnected && this.rxCharacteristic) {
-                const value = await this.rxCharacteristic.readValue();
-                // Only process if there's actual data
-                if (value && value.byteLength > 0) {
-                  this.handleIncomingData({ target: { value } });
-                }
-              }
-            } catch (e) {
-              this.logger.warn('Error polling characteristic:', e);
-            }
-          }, 500); // Poll every 500ms
-        }
-      } catch (error) {
-        this.logger.error(`Error setting up data reception: ${error.message}`);
-        // This is not a fatal error, we can try a different approach
-        this.eventEmitter.emit('bluetooth:warning', {
-          message: `Could not set up data reception: ${error.message}, will try polling`,
-          error
-        });
-        
-        // Set up polling as a fallback
+      // Define a helper method for setting up safe polling
+      const setupSafePolling = (interval = 2000) => {
+        this.logger.debug(`Setting up safe polling with interval: ${interval}ms`);
         this.pollingEnabled = true;
-        this.pollingInterval = setInterval(async () => {
+        
+        // Clear any existing polling interval
+        if (this.pollingInterval) {
+          clearInterval(this.pollingInterval);
+        }
+        
+        // We'll use a timeout-based approach to ensure we don't queue up multiple reads
+        let isReading = false;
+        
+        const pollOnce = async () => {
+          if (!this.isConnected || !this.rxCharacteristic || isReading) {
+            return;
+          }
+          
+          isReading = true;
+          
           try {
-            // Read the characteristic value manually
-            if (this.isConnected && this.rxCharacteristic) {
+            // Wait for GATT to be ready
+            // Check if characteristic supports reading first
+            if (this.rxCharacteristic.properties.read) {
               const value = await this.rxCharacteristic.readValue();
+              
               // Only process if there's actual data
               if (value && value.byteLength > 0) {
                 this.handleIncomingData({ target: { value } });
               }
             }
           } catch (e) {
-            this.logger.warn('Error polling characteristic:', e);
+            // Only log the first few errors to avoid flooding the console
+            if (!this.pollingErrorCount) this.pollingErrorCount = 0;
+            this.pollingErrorCount++;
+            
+            if (this.pollingErrorCount < 5) {
+              this.logger.warn(`Error polling characteristic (${this.pollingErrorCount}/5): ${e.message}`);
+            } else if (this.pollingErrorCount === 5) {
+              this.logger.warn(`Reached maximum polling error count. Suppressing further errors.`);
+            }
+            
+            // If too many errors occur, increase the polling interval
+            if (this.pollingErrorCount === 10) {
+              clearInterval(this.pollingInterval);
+              this.pollingInterval = setInterval(pollOnce, interval * 2);
+              this.logger.warn(`Increased polling interval to ${interval * 2}ms due to errors`);
+            }
+          } finally {
+            isReading = false;
           }
-        }, 500); // Poll every 500ms
+        };
+        
+        this.pollingInterval = setInterval(pollOnce, interval);
+      };
+      
+      // Try to start notifications for incoming data
+      // But make this optional - some devices might use a polling approach instead
+      try {
+        this.logger.debug(`Setting up data reception for characteristic: ${this.rxCharacteristic.uuid}`);
+        const props = Object.keys(this.rxCharacteristic.properties)
+          .filter(p => this.rxCharacteristic.properties[p]);
+        this.logger.debug(`Characteristic properties: ${props.join(', ')}`);
+        
+        // Only attempt to start notifications if the characteristic supports it
+        if (this.rxCharacteristic.properties.notify) {
+          try {
+            await this.rxCharacteristic.startNotifications();
+            this.rxCharacteristic.addEventListener('characteristicvaluechanged', 
+              (event) => this.handleIncomingData(event));
+            this.logger.debug('Notifications started successfully');
+          } catch (notifyError) {
+            this.logger.warn(`Error starting notifications: ${notifyError.message}`);
+            this.eventEmitter.emit('bluetooth:warning', {
+              message: `Could not start notifications: ${notifyError.message}`
+            });
+            
+            // Check if read is available as fallback
+            if (this.rxCharacteristic.properties.read) {
+              this.logger.debug('Falling back to conservative polling');
+              setupSafePolling(3000); // Use a longer interval for fallback polling
+            }
+          }
+        } else if (this.rxCharacteristic.properties.read) {
+          this.logger.debug('Characteristic supports read but not notify, setting up conservative polling');
+          setupSafePolling(2000); // Poll every 2 seconds
+        } else {
+          this.logger.debug('Characteristic does not support read or notify, will use passive reception only');
+          this.eventEmitter.emit('bluetooth:warning', {
+            message: 'Device does not support notifications or reading. Data reception may be limited.'
+          });
+        }
+      } catch (error) {
+        this.logger.error(`Error setting up data reception: ${error.message}`);
+        this.eventEmitter.emit('bluetooth:warning', {
+          message: `Could not set up data reception: ${error.message}`,
+          error
+        });
       }
       
       this.isConnected = true;
@@ -480,17 +599,28 @@ export class BluetoothHandler extends ConnectionHandler {
     try {
       this.autoReconnect = false;
       
-      // Clean up notifications or polling
-      if (this.rxCharacteristic && this.rxCharacteristic.properties.notify) {
-        await this.rxCharacteristic.stopNotifications();
+      // Safely clean up notifications if they were started
+      if (this.rxCharacteristic) {
+        try {
+          if (this.rxCharacteristic.properties.notify) {
+            await this.rxCharacteristic.stopNotifications().catch(e => {
+              this.logger.warn(`Error stopping notifications: ${e.message}`);
+            });
+          }
+        } catch (err) {
+          this.logger.warn(`Error cleaning up notifications: ${err.message}`);
+        }
       }
       
       // Clear polling interval if it was used
-      if (this.pollingEnabled && this.pollingInterval) {
+      if (this.pollingInterval) {
         clearInterval(this.pollingInterval);
         this.pollingInterval = null;
-        this.pollingEnabled = false;
       }
+      
+      // Reset polling state
+      this.pollingEnabled = false;
+      this.pollingErrorCount = 0;
       
       if (this.device.gatt.connected) {
         await this.device.gatt.disconnect();
@@ -524,12 +654,15 @@ export class BluetoothHandler extends ConnectionHandler {
     const wasConnected = this.isConnected;
     this.isConnected = false;
     
-    // Clear polling interval if it was used
-    if (this.pollingEnabled && this.pollingInterval) {
+    // Safe cleanup of polling
+    if (this.pollingInterval) {
       clearInterval(this.pollingInterval);
       this.pollingInterval = null;
-      this.pollingEnabled = false;
     }
+    
+    // Reset all polling related state
+    this.pollingEnabled = false;
+    this.pollingErrorCount = 0;
     
     this.server = null;
     this.serialService = null;

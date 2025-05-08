@@ -247,15 +247,39 @@
     
     // Check API support
     let html = '';
+    
+    // Detect Bluetooth API
     if ('bluetooth' in navigator) {
-      html += '<div style="color: green">✓ Web Bluetooth API is supported</div>';
+      // Check for specific functions
+      const hasRequestDevice = typeof navigator.bluetooth.requestDevice === 'function';
+      if (hasRequestDevice) {
+        html += '<div style="color: green">✓ Web Bluetooth API is supported</div>';
+        
+        // Add a direct test button that bypasses our library completely
+        html += `
+          <button id="directBluetoothTest" style="margin-top: 5px; background-color: #2196F3;">
+            Test Bluetooth Dialog Directly
+          </button>
+        `;
+        
+        // Note: We're skipping the permissions check as 'bluetooth' is not consistently 
+        // supported as a valid permission name across browsers
+      } else {
+        html += '<div style="color: orange">⚠️ Web Bluetooth API partially supported (missing methods)</div>';
+      }
     } else {
       html += '<div style="color: red">✗ Web Bluetooth API is not supported</div>';
       connectBluetoothBtn.disabled = true;
     }
     
+    // Detect Serial API
     if ('serial' in navigator) {
-      html += '<div style="color: green">✓ Web Serial API is supported</div>';
+      const hasRequestPort = typeof navigator.serial.requestPort === 'function';
+      if (hasRequestPort) {
+        html += '<div style="color: green">✓ Web Serial API is supported</div>';
+      } else {
+        html += '<div style="color: orange">⚠️ Web Serial API partially supported (missing methods)</div>';
+      }
     } else {
       html += '<div style="color: red">✗ Web Serial API is not supported</div>';
       connectSerialBtn.disabled = true;
@@ -460,19 +484,52 @@
     
     // Button event handlers
     connectBluetoothBtn.addEventListener('click', async () => {
+      logMessage('Button clicked - testing direct Bluetooth API', 'info');
+      
+      // DIRECT TEST: Try calling navigator.bluetooth.requestDevice directly from the click handler
       try {
-        logMessage('Connecting via Bluetooth...', 'info');
+        logMessage('Directly calling navigator.bluetooth.requestDevice()', 'info');
+        
+        // This is the most minimal call possible
+        const device = await navigator.bluetooth.requestDevice({
+          acceptAllDevices: true,
+        });
+        
+        logMessage(`Direct test succeeded! Selected: ${device.name || device.id}`, 'success');
+        
+        // Now try the actual connection with the device we already selected
+        logMessage(`Connecting to selected device: ${device.name || device.id}...`, 'info');
         updateStatus('Connecting...', 'disconnected');
         
-        const success = await gnss.connectBluetooth();
-        
-        if (!success) {
-          logMessage('Failed to connect via Bluetooth', 'error');
-          updateStatus('Connection failed', 'error');
+        // WARNING: This bypasses our standard flow by passing the device directly to the connection manager
+        try {
+          const success = await gnss.connectDevice({
+            method: 'bluetooth',
+            deviceObj: device // Pass the selected device directly
+          });
+          
+          if (success) {
+            logMessage(`Successfully connected to ${device.name || device.id}`, 'success');
+          } else {
+            logMessage('Device connection failed after device was selected', 'error');
+            updateStatus('Connection failed', 'error');
+          }
+        } catch (connError) {
+          logMessage(`Connection error: ${connError.message}`, 'error');
+          updateStatus('Connection error', 'error');
         }
-      } catch (error) {
-        logMessage(`Error connecting via Bluetooth: ${error.message}`, 'error');
-        updateStatus(`Error: ${error.message}`, 'error');
+      } catch (directError) {
+        // Handle error from direct test
+        logMessage(`⚠️ DIRECT TEST FAILED: ${directError.message}`, 'error');
+        
+        if (directError.name === 'NotFoundError') {
+          logMessage('User canceled the selection dialog', 'info');
+        } else {
+          logMessage(`Error type: ${directError.name}`, 'error');
+          console.error('Direct Bluetooth API error:', directError);
+        }
+        
+        updateStatus(`Error: ${directError.message}`, 'error');
       }
     });
     
@@ -558,6 +615,57 @@
         logMessage(`Error disconnecting from NTRIP: ${error.message}`, 'error');
       }
     });
+    
+    // Add event listener for direct Bluetooth test
+    const directBluetoothTestBtn = document.getElementById('directBluetoothTest');
+    if (directBluetoothTestBtn) {
+      directBluetoothTestBtn.addEventListener('click', async () => {
+        try {
+          logMessage('Running direct Bluetooth API test...', 'info');
+          const device = await navigator.bluetooth.requestDevice({
+            acceptAllDevices: true,
+            // Include some common services we might need
+            optionalServices: [
+              '6e400001-b5a3-f393-e0a9-e50e24dcca9e', // Nordic UART Service
+              '0000ffe0-0000-1000-8000-00805f9b34fb', // Nordic UART Service (alternate)
+              '00001800-0000-1000-8000-00805f9b34fb', // Generic Access
+              '00001801-0000-1000-8000-00805f9b34fb', // Generic Attribute
+            ]
+          });
+          logMessage(`Direct test succeeded! Selected device: ${device.name || device.id}`, 'success');
+          
+          // Ask user if they want to connect to this device
+          if (confirm(`Do you want to connect to the selected device: ${device.name || device.id}?`)) {
+            logMessage('Connecting to selected device...', 'info');
+            updateStatus('Connecting...', 'disconnected');
+            
+            try {
+              const success = await gnss.connectDevice({
+                method: 'bluetooth',
+                deviceObj: device
+              });
+              
+              if (success) {
+                logMessage(`Successfully connected to ${device.name || device.id}`, 'success');
+              } else {
+                logMessage('Connection failed after device selection', 'error');
+                updateStatus('Connection failed', 'error');
+              }
+            } catch (connError) {
+              logMessage(`Connection error: ${connError.message}`, 'error');
+              updateStatus(`Connection error: ${connError.message}`, 'error');
+            }
+          }
+        } catch (error) {
+          if (error.name === 'NotFoundError') {
+            logMessage('Dialog was shown but user canceled', 'info');
+          } else {
+            logMessage(`Error: ${error.message} (${error.name})`, 'error');
+            console.error('Direct test error:', error);
+          }
+        }
+      });
+    }
     
     // Log startup
     logMessage('gnss.js Basic Usage Example initialized', 'info');

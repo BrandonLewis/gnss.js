@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NMEA Parser Test | gnss.js</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 1rem;
+      line-height: 1.5;
+    }
+    h1, h2, h3 {
+      color: #333;
+    }
+    .panel {
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px 5px 5px 0;
+      font-size: 14px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    button.parse {
+      background-color: #2196F3;
+    }
+    button.clear {
+      background-color: #f44336;
+    }
+    .input-area {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 1rem;
+    }
+    .input-area textarea {
+      height: 150px;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+    .output-area {
+      background-color: #f8f9fa;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 1rem;
+      min-height: 200px;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 14px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .example-btn {
+      background-color: #9c27b0;
+    }
+    .output-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .output-tabs {
+      display: flex;
+      gap: 5px;
+    }
+    .tab-btn {
+      background-color: #e0e0e0;
+      color: #333;
+      border: 1px solid #ccc;
+      border-bottom: none;
+      border-radius: 4px 4px 0 0;
+      padding: 8px 16px;
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      background-color: #4CAF50;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>NMEA Parser Tester</h1>
+  <p>Use this tool to test the gnss.js NMEA parser with different NMEA sentences.</p>
+  
+  <div class="panel">
+    <h2>Input NMEA Data</h2>
+    <p>Enter NMEA sentences below. Multiple sentences can be separated by line breaks.</p>
+    
+    <div class="input-area">
+      <textarea id="nmea-input" placeholder="Enter NMEA sentences here..."></textarea>
+      <div>
+        <button id="parse-btn" class="parse">Parse NMEA Data</button>
+        <button id="clear-btn" class="clear">Clear All</button>
+        <button id="load-example1" class="example-btn">Load Example 1 (Basic)</button>
+        <button id="load-example2" class="example-btn">Load Example 2 (Full Set)</button>
+        <button id="load-example3" class="example-btn">Load Example 3 (Error Test)</button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="panel">
+    <h2>Parser Results</h2>
+    
+    <div class="output-container">
+      <div class="output-tabs">
+        <button class="tab-btn active" data-target="parsed-output">Parsed Output</button>
+        <button class="tab-btn" data-target="pretty-output">Pretty View</button>
+        <button class="tab-btn" data-target="stats-output">Stats</button>
+      </div>
+      
+      <div id="parsed-output" class="output-area"></div>
+      <div id="pretty-output" class="output-area" style="display: none;"></div>
+      <div id="stats-output" class="output-area" style="display: none;"></div>
+    </div>
+  </div>
+  
+  <script type="module">
+    import { NmeaParser } from '../src/nmea-parser.js';
+    
+    // DOM elements
+    const nmeaInput = document.getElementById('nmea-input');
+    const parseBtn = document.getElementById('parse-btn');
+    const clearBtn = document.getElementById('clear-btn');
+    const loadExample1Btn = document.getElementById('load-example1');
+    const loadExample2Btn = document.getElementById('load-example2');
+    const loadExample3Btn = document.getElementById('load-example3');
+    const parsedOutput = document.getElementById('parsed-output');
+    const prettyOutput = document.getElementById('pretty-output');
+    const statsOutput = document.getElementById('stats-output');
+    
+    // Tab switching
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const outputAreas = document.querySelectorAll('.output-area');
+    
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        // Set active tab button
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        
+        // Show related output area
+        const targetId = button.getAttribute('data-target');
+        outputAreas.forEach(area => {
+          area.style.display = area.id === targetId ? 'block' : 'none';
+        });
+      });
+    });
+    
+    // Create NMEA parser instance
+    const parser = new NmeaParser({
+      debug: {
+        info: true,
+        debug: true,
+        errors: true,
+        parsedSentences: true
+      }
+    });
+    
+    // Register a custom log handler to capture logs
+    let logs = [];
+    
+    const originalConsoleInfo = console.info;
+    const originalConsoleDebug = console.debug;
+    const originalConsoleError = console.error;
+    const originalConsoleWarn = console.warn;
+    const originalConsoleLog = console.log;
+    
+    console.info = function(...args) {
+      logs.push({ level: 'info', message: args.join(' ') });
+      originalConsoleInfo.apply(console, args);
+    };
+    
+    console.debug = function(...args) {
+      logs.push({ level: 'debug', message: args.join(' ') });
+      originalConsoleDebug.apply(console, args);
+    };
+    
+    console.error = function(...args) {
+      logs.push({ level: 'error', message: args.join(' ') });
+      originalConsoleError.apply(console, args);
+    };
+    
+    console.warn = function(...args) {
+      logs.push({ level: 'warn', message: args.join(' ') });
+      originalConsoleWarn.apply(console, args);
+    };
+    
+    console.log = function(...args) {
+      logs.push({ level: 'log', message: args.join(' ') });
+      originalConsoleLog.apply(console, args);
+    };
+    
+    // Parse NMEA data
+    function parseNmea() {
+      const input = nmeaInput.value.trim();
+      if (!input) {
+        parsedOutput.textContent = 'No NMEA data to parse.';
+        return;
+      }
+      
+      // Clear previous results
+      logs = [];
+      
+      // Reset parser to clear state
+      parser.reset();
+      
+      try {
+        // Parse data
+        const results = parser.parseData(input);
+        
+        // Display raw parsed results
+        parsedOutput.textContent = JSON.stringify(results, null, 2);
+        
+        // Display pretty view
+        updatePrettyOutput(results);
+        
+        // Display statistics
+        updateStatsOutput();
+      } catch (error) {
+        parsedOutput.textContent = `Error parsing NMEA data: ${error.message}\n\n${error.stack}`;
+      }
+    }
+    
+    // Update the pretty output view
+    function updatePrettyOutput(results) {
+      if (!results || results.length === 0) {
+        prettyOutput.innerHTML = '<span style="color: #666;">No valid NMEA sentences found.</span>';
+        return;
+      }
+      
+      let html = '<h3>Parsed NMEA Sentences</h3>';
+      
+      results.forEach((result, i) => {
+        html += `<div style="margin-bottom: 20px; border-left: 4px solid #4CAF50; padding-left: 10px;">`;
+        html += `<div style="font-weight: bold; margin-bottom: 5px;">Sentence ${i+1}: ${result.type}</div>`;
+        
+        // Add type-specific info
+        switch (result.type) {
+          case 'GGA':
+            html += `<div>Time: ${result.time}</div>`;
+            html += `<div>Position: ${result.latitude ? result.latitude.toFixed(6) : 'N/A'}° ${result.latitude >= 0 ? 'N' : 'S'}, ${result.longitude ? result.longitude.toFixed(6) : 'N/A'}° ${result.longitude >= 0 ? 'E' : 'W'}</div>`;
+            html += `<div>Altitude: ${result.altitude ? result.altitude.toFixed(2) + 'm' : 'N/A'}</div>`;
+            html += `<div>Fix Quality: ${getFixQuality(result.fixQuality)}</div>`;
+            html += `<div>Satellites: ${result.satellites}</div>`;
+            html += `<div>HDOP: ${result.hdop}</div>`;
+            break;
+            
+          case 'GSA':
+            html += `<div>Mode: ${result.mode === 'A' ? 'Automatic' : 'Manual'}</div>`;
+            html += `<div>Fix Type: ${getFixType(result.fixType)}</div>`;
+            html += `<div>Satellites Used: ${result.satellites.join(', ')}</div>`;
+            html += `<div>PDOP: ${result.pdop}</div>`;
+            html += `<div>HDOP: ${result.hdop}</div>`;
+            html += `<div>VDOP: ${result.vdop}</div>`;
+            break;
+            
+          case 'GSV':
+            html += `<div>Message: ${result.messageNumber} of ${result.totalMessages}</div>`;
+            html += `<div>Satellites in View: ${result.satellitesInView}</div>`;
+            html += `<div>Satellites in this message: ${result.satellites.length}</div>`;
+            
+            if (result.satellites.length > 0) {
+              html += `<table style="width: 100%; border-collapse: collapse; margin-top: 5px;">`;
+              html += `<tr style="background-color: #f2f2f2;"><th style="padding: 5px; text-align: left;">PRN</th><th style="padding: 5px; text-align: left;">Elevation</th><th style="padding: 5px; text-align: left;">Azimuth</th><th style="padding: 5px; text-align: left;">SNR</th></tr>`;
+              
+              result.satellites.forEach(sat => {
+                html += `<tr>`;
+                html += `<td style="padding: 5px; border-top: 1px solid #ddd;">${sat.prn}</td>`;
+                html += `<td style="padding: 5px; border-top: 1px solid #ddd;">${sat.elevation}°</td>`;
+                html += `<td style="padding: 5px; border-top: 1px solid #ddd;">${sat.azimuth}°</td>`;
+                html += `<td style="padding: 5px; border-top: 1px solid #ddd;">${sat.snr !== null ? sat.snr + ' dB' : 'N/A'}</td>`;
+                html += `</tr>`;
+              });
+              
+              html += `</table>`;
+            }
+            break;
+            
+          case 'RMC':
+            html += `<div>Time: ${result.time}</div>`;
+            html += `<div>Date: ${result.date}</div>`;
+            html += `<div>Status: ${result.status === 'A' ? 'Active' : 'Void'}</div>`;
+            html += `<div>Position: ${result.latitude ? result.latitude.toFixed(6) : 'N/A'}° ${result.latitude >= 0 ? 'N' : 'S'}, ${result.longitude ? result.longitude.toFixed(6) : 'N/A'}° ${result.longitude >= 0 ? 'E' : 'W'}</div>`;
+            html += `<div>Speed: ${result.speed !== null ? (result.speed * 1.852).toFixed(2) + ' km/h' : 'N/A'}</div>`;
+            html += `<div>Course: ${result.course !== null ? result.course.toFixed(2) + '°' : 'N/A'}</div>`;
+            html += `<div>Magnetic Variation: ${result.magneticVariation !== null ? result.magneticVariation + '° ' + (result.magneticVariationDirection || '') : 'N/A'}</div>`;
+            html += `<div>Mode: ${result.mode || 'N/A'}</div>`;
+            break;
+            
+          case 'GST':
+            html += `<div>Time: ${result.time}</div>`;
+            html += `<div>RMS: ${result.rms.toFixed(3)}</div>`;
+            html += `<div>Semi-Major Error: ${result.semiMajorError.toFixed(3)}</div>`;
+            html += `<div>Semi-Minor Error: ${result.semiMinorError.toFixed(3)}</div>`;
+            html += `<div>Orientation Error: ${result.orientationError.toFixed(3)}°</div>`;
+            html += `<div>Latitude Error: ${result.latitudeError.toFixed(3)}</div>`;
+            html += `<div>Longitude Error: ${result.longitudeError.toFixed(3)}</div>`;
+            html += `<div>Height Error: ${result.heightError.toFixed(3)}</div>`;
+            break;
+            
+          case 'VTG':
+            html += `<div>Course (True): ${result.courseTrue !== null ? result.courseTrue.toFixed(2) + '°' : 'N/A'}</div>`;
+            html += `<div>Course (Magnetic): ${result.courseMagnetic !== null ? result.courseMagnetic.toFixed(2) + '°' : 'N/A'}</div>`;
+            html += `<div>Speed (Knots): ${result.speedKnots !== null ? result.speedKnots.toFixed(2) + ' knots' : 'N/A'}</div>`;
+            html += `<div>Speed (km/h): ${result.speedKmh !== null ? result.speedKmh.toFixed(2) + ' km/h' : 'N/A'}</div>`;
+            html += `<div>Mode: ${result.mode || 'N/A'}</div>`;
+            break;
+            
+          default:
+            html += `<div>Raw sentence: ${result.raw}</div>`;
+            break;
+        }
+        
+        html += `<div style="font-size: 12px; color: #666; margin-top: 5px;">Raw: ${result.raw}</div>`;
+        html += `</div>`;
+      });
+      
+      // Add logs section
+      html += `<h3>Parser Logs</h3>`;
+      if (logs.length === 0) {
+        html += `<div style="color: #666;">No logs generated.</div>`;
+      } else {
+        logs.forEach(log => {
+          const color = log.level === 'error' ? '#f44336' : 
+                        log.level === 'warn' ? '#ff9800' :
+                        log.level === 'info' ? '#2196F3' : 
+                        log.level === 'debug' ? '#9c27b0' : '#333';
+          
+          html += `<div style="color: ${color}; font-size: 12px; margin-bottom: 4px;">${log.message}</div>`;
+        });
+      }
+      
+      prettyOutput.innerHTML = html;
+    }
+    
+    // Update the statistics output
+    function updateStatsOutput() {
+      const stats = parser.getSentenceStats();
+      const position = parser.getPosition();
+      const satellites = parser.getSatellites();
+      
+      let html = '<h3>Parser Statistics</h3>';
+      
+      // Sentence counts
+      html += '<div style="margin-bottom: 15px;">';
+      html += '<h4>Sentence Counts</h4>';
+      html += '<table style="width: 100%; border-collapse: collapse;">';
+      html += '<tr style="background-color: #f2f2f2;"><th style="padding: 5px; text-align: left;">Type</th><th style="padding: 5px; text-align: left;">Count</th></tr>';
+      
+      Object.entries(stats).forEach(([type, count]) => {
+        if (type !== 'lastUpdate') {
+          html += `<tr>`;
+          html += `<td style="padding: 5px; border-top: 1px solid #ddd;">${type}</td>`;
+          html += `<td style="padding: 5px; border-top: 1px solid #ddd;">${count}</td>`;
+          html += `</tr>`;
+        }
+      });
+      
+      html += '</table>';
+      html += '</div>';
+      
+      // Last position
+      html += '<div style="margin-bottom: 15px;">';
+      html += '<h4>Last Position</h4>';
+      if (position) {
+        html += `<div>Latitude: ${position.latitude.toFixed(6)}° ${position.latitude >= 0 ? 'N' : 'S'}</div>`;
+        html += `<div>Longitude: ${position.longitude.toFixed(6)}° ${position.longitude >= 0 ? 'E' : 'W'}</div>`;
+      } else {
+        html += '<div style="color: #666;">No position data available.</div>';
+      }
+      html += '</div>';
+      
+      // Satellites
+      html += '<div>';
+      html += '<h4>Satellite Data</h4>';
+      if (satellites && satellites.length > 0) {
+        html += `<div>Satellites in view: ${satellites.length}</div>`;
+        html += '<table style="width: 100%; border-collapse: collapse; margin-top: 5px;">';
+        html += '<tr style="background-color: #f2f2f2;"><th style="padding: 5px; text-align: left;">PRN</th><th style="padding: 5px; text-align: left;">Elevation</th><th style="padding: 5px; text-align: left;">Azimuth</th><th style="padding: 5px; text-align: left;">SNR</th></tr>';
+        
+        satellites.forEach(sat => {
+          html += `<tr>`;
+          html += `<td style="padding: 5px; border-top: 1px solid #ddd;">${sat.prn}</td>`;
+          html += `<td style="padding: 5px; border-top: 1px solid #ddd;">${sat.elevation}°</td>`;
+          html += `<td style="padding: 5px; border-top: 1px solid #ddd;">${sat.azimuth}°</td>`;
+          html += `<td style="padding: 5px; border-top: 1px solid #ddd;">${sat.snr !== null ? sat.snr + ' dB' : 'N/A'}</td>`;
+          html += `</tr>`;
+        });
+        
+        html += '</table>';
+      } else {
+        html += '<div style="color: #666;">No satellite data available.</div>';
+      }
+      html += '</div>';
+      
+      statsOutput.innerHTML = html;
+    }
+    
+    // Helper functions
+    function getFixQuality(quality) {
+      switch(parseInt(quality)) {
+        case 0: return 'No Fix (0)';
+        case 1: return 'GPS Fix (1)';
+        case 2: return 'DGPS Fix (2)';
+        case 3: return 'PPS Fix (3)';
+        case 4: return 'RTK Fixed (4)';
+        case 5: return 'RTK Float (5)';
+        case 6: return 'Estimated Fix (6)';
+        case 7: return 'Manual Input Mode (7)';
+        case 8: return 'Simulation Mode (8)';
+        default: return `Unknown (${quality})`;
+      }
+    }
+    
+    function getFixType(type) {
+      switch(parseInt(type)) {
+        case 1: return 'No Fix (1)';
+        case 2: return '2D Fix (2)';
+        case 3: return '3D Fix (3)';
+        default: return `Unknown (${type})`;
+      }
+    }
+    
+    // Example data sets
+    const exampleData1 = `$GPGGA,092750.000,5321.6802,N,00630.3372,W,1,8,1.03,61.7,M,55.2,M,,*76
+$GPGSA,A,3,10,07,05,02,29,04,08,13,,,,,1.72,1.03,1.38*0A
+$GPGSV,3,1,11,10,63,137,17,07,61,098,15,05,59,290,20,08,54,157,30*70
+$GPGSV,3,2,11,02,39,223,19,13,28,070,17,26,23,252,,04,14,186,14*79
+$GPRMC,092750.000,A,5321.6802,N,00630.3372,W,0.02,31.66,280511,,,A*43`;
+
+    const exampleData2 = `$GNGGA,092750.000,5321.6802,N,00630.3372,W,1,8,1.03,61.7,M,55.2,M,,*62
+$GNGSA,A,3,10,07,05,02,29,04,08,13,,,,,1.72,1.03,1.38*0A
+$GPGSV,3,1,11,10,63,137,17,07,61,098,15,05,59,290,20,08,54,157,30*70
+$GPGSV,3,2,11,02,39,223,19,13,28,070,17,26,23,252,,04,14,186,14*79
+$GPGSV,3,3,11,29,09,301,24,16,09,020,,36,,,*76
+$GLGSV,2,1,08,82,45,285,16,65,39,059,23,66,34,100,23,81,27,314,16*67
+$GLGSV,2,2,08,88,11,073,,78,08,331,,87,05,244,,83,04,197,*6F
+$GNGST,092751.000,0.11,0.25,0.15,177.03,0.05,0.06,0.09*5A
+$GNRMC,092751.000,A,5321.6802,N,00630.3371,W,0.03,96.00,280511,,,D*7B
+$GNVTG,96.00,T,,M,0.03,N,0.06,K,D*31`;
+
+    const exampleData3 = `$GPGGA,092750.000,5321.6802,N,00630.3372,W,1,8,1.03,61.7,M,55.2,M,,*76
+$GPGSA,A,3,10,07,05,02,29,04,08,13,,,,,1.72,1.03,1.38*0A
+Invalid NMEA
+$GPGGA,invalid,data,here,N,1*23
+$GPGGA,092751.000,5321.6802,N,00630.3371,W,1,8,1.03,61.7,M,55.2,M,,*75`;
+    
+    // Event listeners
+    parseBtn.addEventListener('click', parseNmea);
+    
+    clearBtn.addEventListener('click', () => {
+      nmeaInput.value = '';
+      parsedOutput.textContent = '';
+      prettyOutput.innerHTML = '';
+      statsOutput.innerHTML = '';
+      logs = [];
+    });
+    
+    loadExample1Btn.addEventListener('click', () => {
+      nmeaInput.value = exampleData1;
+    });
+    
+    loadExample2Btn.addEventListener('click', () => {
+      nmeaInput.value = exampleData2;
+    });
+    
+    loadExample3Btn.addEventListener('click', () => {
+      nmeaInput.value = exampleData3;
+    });
+    
+    // Initial state - load a basic example
+    nmeaInput.value = exampleData1;
+  </script>
+</body>
+</html>

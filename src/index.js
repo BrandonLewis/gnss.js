@@ -126,7 +126,18 @@ class GnssModule {
       
       if (connected) {
         // Setup data flow from device to NMEA parser
-        this.connectionManager.on('data', (data) => {
+        // We need to listen for both generic and specific device data events
+        this.events.on('device:data', (data) => {
+          this.nmeaParser.parse(data);
+        });
+        
+        // Also listen for bluetooth-specific data
+        this.events.on('bluetooth:data', (data) => {
+          this.nmeaParser.parse(data);
+        });
+        
+        // Also listen for serial-specific data
+        this.events.on('serial:data', (data) => {
           this.nmeaParser.parse(data);
         });
       }
@@ -144,10 +155,50 @@ class GnssModule {
    * @returns {Promise<boolean>} Connection success
    */
   async connectBluetooth(options = {}) {
-    return this.connectDevice({ 
-      ...options,
-      method: 'bluetooth'
-    });
+    try {
+      // Important: This must be called directly in response to a user gesture
+      // Create the options for requestDevice
+      const requestOptions = {
+        acceptAllDevices: !options.filters,
+        filters: options.filters || [],
+        optionalServices: [
+          // Common UART services
+          '6e400001-b5a3-f393-e0a9-e50e24dcca9e', // Nordic UART Service
+          '0000ffe0-0000-1000-8000-00805f9b34fb', // Nordic UART Service (alternate)
+          '49535343-fe7d-4ae5-8fa9-9fafd205e455', // HM-10/HM-16/HM-17 Service
+          '0000fff0-0000-1000-8000-00805f9b34fb', // HC-08/HC-10 Service
+          
+          // Generic services
+          '00001800-0000-1000-8000-00805f9b34fb', // Generic Access
+          '00001801-0000-1000-8000-00805f9b34fb', // Generic Attribute
+          
+          // SparkFun specific
+          '0000fe9a-0000-1000-8000-00805f9b34fb',  // Custom service
+          
+          // Classic Bluetooth services
+          '00001101-0000-1000-8000-00805f9b34fb', // SPP
+        ]
+      };
+      
+      // Request device directly (this must happen in direct response to user gesture)
+      const device = await navigator.bluetooth.requestDevice(requestOptions);
+      
+      // Now pass the selected device to the connection manager
+      return this.connectDevice({ 
+        ...options,
+        method: 'bluetooth',
+        deviceObj: device // Pass the selected device object
+      });
+    } catch (error) {
+      // Handle the case where user cancels the dialog
+      if (error.name === 'NotFoundError') {
+        this.events.emit('connection:error', { message: 'No device selected' });
+        return false;
+      }
+      
+      this.events.emit('connection:error', { message: error.message });
+      return false;
+    }
   }
   
   /**
