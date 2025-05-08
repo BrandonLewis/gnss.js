@@ -1,0 +1,247 @@
+/**
+ * gnss.js v0.1.0
+ * JavaScript module for GNSS device connections, NMEA parsing, and NTRIP client functionality
+ * https://github.com/BrandonLewis/gnss.js#readme
+ * 
+ * @license MIT
+ * @copyright 2025 Your Name <your.email@example.com>
+ */
+
+(function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+  typeof define === 'function' && define.amd ? define(['exports'], factory) :
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.GnssModule = {}));
+})(this, (function (exports) { 'use strict';
+
+  /**
+   * EventEmitter - Simple event system for component communication
+   */
+  class EventEmitter {
+    constructor() {
+      this.events = {};
+      this.debugMode = false;
+    }
+
+    /**
+     * Subscribe to an event
+     * @param {string} event - Event name
+     * @param {Function} listener - Callback function
+     * @returns {Function} Unsubscribe function
+     */
+    on(event, listener) {
+      if (!this.events[event]) {
+        this.events[event] = [];
+      }
+      
+      this.events[event].push(listener);
+      
+      // Return unsubscribe function
+      return () => {
+        this.events[event] = this.events[event].filter(l => l !== listener);
+      };
+    }
+    
+    /**
+     * Modern DOM-style event subscription (alias for on)
+     * @param {string} event - Event name
+     * @param {Function} listener - Callback function
+     */
+    addEventListener(event, listener) {
+      return this.on(event, listener);
+    }
+
+    /**
+     * Subscribe to an event once
+     * @param {string} event - Event name
+     * @param {Function} listener - Callback function
+     */
+    once(event, listener) {
+      const remove = this.on(event, (...args) => {
+        remove();
+        listener(...args);
+      });
+    }
+
+    /**
+     * Emit an event with data
+     * @param {string} event - Event name
+     * @param {*} data - Event data
+     */
+    emit(event, data) {
+      if (this.debugMode) {
+        console.log(`[EventEmitter] ${event}:`, data);
+      }
+      
+      if (this.events[event]) {
+        this.events[event].forEach(listener => {
+          try {
+            listener(data);
+          } catch (error) {
+            console.error(`Error in event listener for '${event}':`, error);
+          }
+        });
+      }
+    }
+
+    /**
+     * Remove a specific listener for an event
+     * @param {string} event - Event name
+     * @param {Function} listener - Callback function to remove
+     */
+    off(event, listener) {
+      if (this.events[event]) {
+        this.events[event] = this.events[event].filter(l => l !== listener);
+      }
+    }
+    
+    /**
+     * Modern DOM-style event unsubscription (alias for off)
+     * @param {string} event - Event name
+     * @param {Function} listener - Callback function to remove
+     */
+    removeEventListener(event, listener) {
+      return this.off(event, listener);
+    }
+    
+    /**
+     * Remove all listeners for an event
+     * @param {string} event - Event name
+     */
+    removeAllListeners(event) {
+      if (event) {
+        delete this.events[event];
+      } else {
+        this.events = {};
+      }
+    }
+
+    /**
+     * Enable/disable debug mode
+     * @param {boolean} enabled - Whether debug mode is enabled
+     */
+    setDebug(enabled) {
+      this.debugMode = enabled;
+    }
+  }
+
+  /**
+   * GNSS Module - Main entry point
+   * 
+   * This module provides a JavaScript interface for connecting to GNSS RTK rovers
+   * via Web Bluetooth or Web Serial, parsing NMEA data, and managing NTRIP correction data.
+   */
+
+  /**
+   * Main GNSS Module class
+   * Manages device connections, NMEA parsing, and NTRIP client
+   */
+  class GnssModule {
+    /**
+     * Create a new GNSS module instance
+     * @param {Object} options - Configuration options
+     */
+    constructor(options = {}) {
+      // Initialize event system
+      this.events = new EventEmitter();
+      
+      // Initialize other properties
+      this.debugSettings = options.debugSettings || {
+        info: false,
+        debug: false,
+        errors: true,
+        parsedSentences: false,
+        rtcmMessages: false
+      };
+      
+      // Last known position
+      this.currentPosition = null;
+    }
+    
+    /**
+     * Set up internal event listeners
+     * @private
+     */
+    _setupEventListeners() {
+      // To be implemented as components are added
+    }
+    
+    /**
+     * Connect to a GNSS device using available methods
+     * @param {Object} options - Connection options
+     * @returns {Promise<boolean>} Connection success
+     */
+    async connectDevice(options = {}) {
+      console.log('connectDevice not yet implemented');
+      return false;
+    }
+    
+    /**
+     * Connect to NTRIP caster
+     * @param {Object} options - Connection options
+     * @returns {Promise<boolean>} Connection success
+     */
+    async connectNtrip(options = {}) {
+      console.log('connectNtrip not yet implemented');
+      return false;
+    }
+    
+    /**
+     * Disconnect from device
+     * @returns {Promise<void>}
+     */
+    async disconnectDevice() {
+      console.log('disconnectDevice not yet implemented');
+    }
+    
+    /**
+     * Disconnect from NTRIP
+     * @returns {Promise<void>}
+     */
+    async disconnectNtrip() {
+      console.log('disconnectNtrip not yet implemented');
+    }
+    
+    /**
+     * Get current position
+     * @returns {Object|null} Current position
+     */
+    getPosition() {
+      return this.currentPosition;
+    }
+    
+    /**
+     * Get satellite information
+     * @returns {Array|null} Satellite information
+     */
+    getSatellites() {
+      return [];
+    }
+    
+    /**
+     * Subscribe to an event
+     * @param {string} event - Event name
+     * @param {Function} callback - Callback function
+     * @returns {Function} Unsubscribe function
+     */
+    on(event, callback) {
+      return this.events.on(event, callback);
+    }
+    
+    /**
+     * Unsubscribe from an event
+     * @param {string} event - Event name
+     * @param {Function} callback - Callback function
+     */
+    off(event, callback) {
+      this.events.off(event, callback);
+    }
+  }
+
+  exports.EventEmitter = EventEmitter;
+  exports.GnssModule = GnssModule;
+  exports.default = GnssModule;
+
+  Object.defineProperty(exports, '__esModule', { value: true });
+
+}));
+//# sourceMappingURL=gnss.js.map
