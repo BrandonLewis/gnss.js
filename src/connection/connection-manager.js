@@ -1,7 +1,7 @@
 /**
  * ConnectionManager - Manages and prioritizes different connection methods for GNSS devices
  */
-class ConnectionManager {
+export class ConnectionManager {
   constructor(eventEmitter, options = {}) {
     this.eventEmitter = eventEmitter;
     this.connectionMethods = []; // List of registered connection handlers

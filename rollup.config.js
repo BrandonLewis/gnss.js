@@ -1,5 +1,5 @@
 import terser from '@rollup/plugin-terser';
-import { readFileSync } from 'fs';
+import { readFileSync } from 'node:fs';
 
 // Read package.json
 const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url)));

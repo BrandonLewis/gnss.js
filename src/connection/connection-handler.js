@@ -1,7 +1,7 @@
 /**
  * ConnectionHandler - Base class for implementing different connection methods
  */
-class ConnectionHandler {
+export class ConnectionHandler {
   constructor(eventEmitter, options = {}) {
     this.eventEmitter = eventEmitter;
     this.isConnected = false;

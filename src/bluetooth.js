@@ -1,7 +1,7 @@
 /**
- * BluetoothManager - Handles Web Bluetooth connections to GNSS receivers
+ * BluetoothConnection - Handles Web Bluetooth connections to GNSS receivers
  */
-class BluetoothManager {
+export class BluetoothConnection {
   constructor(eventEmitter, options = {}) {
     this.eventEmitter = eventEmitter;
     this.device = null;

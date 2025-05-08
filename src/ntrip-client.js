@@ -2,7 +2,7 @@
  * NtripClient - Handles connections to NTRIP casters for RTK corrections
  * with multiple connection approaches (direct, proxy, WebSocket)
  */
-class NtripClient {
+export class NtripClient {
   /**
    * Create a new NTRIP client
    * @param {Object} eventEmitter - Event emitter for communication

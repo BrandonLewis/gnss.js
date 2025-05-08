@@ -1,7 +1,7 @@
 /**
- * SettingsManager - Manages and persists module settings
+ * Settings - Manages and persists module settings
  */
-class SettingsManager {
+export class Settings {
   constructor() {
     this.dbName = 'gnss-module-db';
     this.storeName = 'settings';

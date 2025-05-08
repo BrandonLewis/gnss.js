@@ -5,6 +5,15 @@
  * via Web Bluetooth or Web Serial, parsing NMEA data, and managing NTRIP correction data.
  */
 import { EventEmitter } from './event-emitter.js';
+import { BluetoothConnection } from './bluetooth.js'; 
+import { NmeaParser } from './nmea-parser.js';
+import { NtripClient } from './ntrip-client.js';
+import { Settings } from './settings.js';
+import { ConnectionManager } from './connection/connection-manager.js';
+import { BluetoothHandler } from './connection/bluetooth-handler.js';
+import { SerialHandler } from './connection/serial-handler.js';
+import { RtkSettings } from './ui/rtk-settings.js'; 
+import { RtkStatus } from './ui/rtk-status.js';
 
 /**
  * Main GNSS Module class
@@ -19,6 +28,9 @@ class GnssModule {
     // Initialize event system
     this.events = new EventEmitter();
     
+    // Initialize settings
+    this.settings = new Settings(options.settings);
+    
     // Initialize other properties
     this.debugSettings = options.debugSettings || {
       info: false,
@@ -28,8 +40,42 @@ class GnssModule {
       rtcmMessages: false
     };
     
+    // Initialize connection manager
+    this.connectionManager = new ConnectionManager({
+      events: this.events,
+      settings: this.settings
+    });
+    
+    // Initialize NMEA parser
+    this.nmeaParser = new NmeaParser({
+      events: this.events
+    });
+    
+    // Initialize NTRIP client
+    this.ntripClient = new NtripClient({
+      events: this.events,
+      settings: this.settings
+    });
+    
+    // Initialize UI components if enabled
+    if (options.ui !== false) {
+      this.rtkSettings = new RtkSettings({
+        events: this.events,
+        settings: this.settings,
+        selector: options.rtkSettingsSelector
+      });
+      
+      this.rtkStatus = new RtkStatus({
+        events: this.events,
+        selector: options.rtkStatusSelector
+      });
+    }
+    
     // Last known position
     this.currentPosition = null;
+    
+    // Setup internal event listeners
+    this._setupEventListeners();
   }
   
   /**
@@ -37,7 +83,24 @@ class GnssModule {
    * @private
    */
   _setupEventListeners() {
-    // To be implemented as components are added
+    // Listen for position updates from NMEA parser
+    this.events.on('nmea:position', (position) => {
+      this.currentPosition = position;
+      this.events.emit('position', position);
+    });
+    
+    // Listen for satellite updates from NMEA parser
+    this.events.on('nmea:satellites', (satellites) => {
+      this.satellites = satellites;
+      this.events.emit('satellites', satellites);
+    });
+    
+    // Forward RTCM data to device when connected
+    this.events.on('ntrip:rtcm', (rtcmData) => {
+      if (this.connectionManager.isConnected()) {
+        this.connectionManager.sendData(rtcmData.data);
+      }
+    });
   }
   
   /**
@@ -46,8 +109,45 @@ class GnssModule {
    * @returns {Promise<boolean>} Connection success
    */
   async connectDevice(options = {}) {
-    console.log('connectDevice not yet implemented');
-    return false;
+    try {
+      const connected = await this.connectionManager.connect(options);
+      
+      if (connected) {
+        // Setup data flow from device to NMEA parser
+        this.connectionManager.on('data', (data) => {
+          this.nmeaParser.parse(data);
+        });
+      }
+      
+      return connected;
+    } catch (error) {
+      this.events.emit('connection:error', { message: error.message });
+      return false;
+    }
+  }
+  
+  /**
+   * Connect specifically via Bluetooth
+   * @param {Object} options - Bluetooth connection options
+   * @returns {Promise<boolean>} Connection success
+   */
+  async connectBluetooth(options = {}) {
+    return this.connectDevice({ 
+      ...options,
+      method: 'bluetooth'
+    });
+  }
+  
+  /**
+   * Connect specifically via Serial
+   * @param {Object} options - Serial connection options
+   * @returns {Promise<boolean>} Connection success
+   */
+  async connectSerial(options = {}) {
+    return this.connectDevice({ 
+      ...options,
+      method: 'serial'
+    });
   }
   
   /**
@@ -56,8 +156,15 @@ class GnssModule {
    * @returns {Promise<boolean>} Connection success
    */
   async connectNtrip(options = {}) {
-    console.log('connectNtrip not yet implemented');
-    return false;
+    try {
+      return await this.ntripClient.connect({
+        ...options,
+        position: this.currentPosition
+      });
+    } catch (error) {
+      this.events.emit('ntrip:error', { message: error.message });
+      return false;
+    }
   }
   
   /**
@@ -65,7 +172,7 @@ class GnssModule {
    * @returns {Promise<void>}
    */
   async disconnectDevice() {
-    console.log('disconnectDevice not yet implemented');
+    return this.connectionManager.disconnect();
   }
   
   /**
@@ -73,7 +180,7 @@ class GnssModule {
    * @returns {Promise<void>}
    */
   async disconnectNtrip() {
-    console.log('disconnectNtrip not yet implemented');
+    return this.ntripClient.disconnect();
   }
   
   /**
@@ -89,7 +196,15 @@ class GnssModule {
    * @returns {Array|null} Satellite information
    */
   getSatellites() {
-    return [];
+    return this.satellites || [];
+  }
+  
+  /**
+   * Get the settings manager
+   * @returns {Settings} Settings manager
+   */
+  getSettings() {
+    return this.settings;
   }
   
   /**
@@ -115,8 +230,17 @@ class GnssModule {
 // Export the main module class
 export { GnssModule };
 
-// Export EventEmitter for extensibility
+// Export other classes for extensibility
 export { EventEmitter };
+export { BluetoothConnection };
+export { NmeaParser };
+export { NtripClient };
+export { Settings };
+export { ConnectionManager };
+export { BluetoothHandler };
+export { SerialHandler };
+export { RtkSettings };
+export { RtkStatus };
 
 // Export default GnssModule for backward compatibility
 export default GnssModule;

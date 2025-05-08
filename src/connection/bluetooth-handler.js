@@ -1,9 +1,9 @@
 /**
- * BluetoothConnectionHandler - Implements Web Bluetooth connections
+ * BluetoothHandler - Implements Web Bluetooth connections
  */
-import ConnectionHandler from './connection-handler.js';
+import { ConnectionHandler } from './connection-handler.js';
 
-class BluetoothConnectionHandler extends ConnectionHandler {
+export class BluetoothHandler extends ConnectionHandler {
   constructor(eventEmitter, options = {}) {
     super(eventEmitter, options);
     this.name = 'bluetooth';

@@ -1,7 +1,7 @@
 /**
  * NmeaParser - Parses NMEA sentences from the GNSS receiver
  */
-class NmeaParser {
+export class NmeaParser {
   constructor(options = {}) {
     this.lastPosition = null;
     this.lastSatellites = [];

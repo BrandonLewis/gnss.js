@@ -4,7 +4,7 @@
  * This component provides a user interface for configuring NTRIP RTK correction settings
  * and managing connections to NTRIP casters.
  */
-class RtkSettings {
+export class RtkSettings {
   /**
    * Create an RTK settings component
    * @param {Object} gnssManager - GNSS manager instance

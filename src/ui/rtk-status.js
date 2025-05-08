@@ -4,7 +4,7 @@
  * This component displays the current RTK fix status, including fix quality,
  * satellite information, and correction data status.
  */
-class RtkStatus {
+export class RtkStatus {
   /**
    * Create an RTK status component
    * @param {Object} gnssManager - GNSS manager instance

@@ -1,9 +1,9 @@
 /**
- * SerialConnectionHandler - Implements Web Serial API connections
+ * SerialHandler - Implements Web Serial API connections
  */
-import ConnectionHandler from './connection-handler.js';
+import { ConnectionHandler } from './connection-handler.js';
 
-class SerialConnectionHandler extends ConnectionHandler {
+export class SerialHandler extends ConnectionHandler {
   constructor(eventEmitter, options = {}) {
     super(eventEmitter, options);
     this.name = 'serial';
