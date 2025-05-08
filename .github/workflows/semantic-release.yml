@@ -30,9 +30,22 @@ jobs:
         run: npm run build
         
       - name: Semantic Release
+        id: semantic
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          npm install -g semantic-release @semantic-release/changelog @semantic-release/git
+          npm install -g semantic-release @semantic-release/changelog @semantic-release/git @semantic-release/github
           semantic-release
+      
+      - name: Upload dist to current release tag
+        uses: softprops/action-gh-release@v2
+        if: steps.semantic.outputs.new_release_published == 'true'
+        with:
+          tag_name: v${{ steps.semantic.outputs.new_release_version }}
+          files: |
+            dist/gnss.js
+            dist/gnss.min.js
+            dist/gnss.esm.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}

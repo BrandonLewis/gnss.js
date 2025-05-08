@@ -48,17 +48,17 @@ yarn add gnss.js
 
 ```html
 <!-- Latest version (development) -->
-<script src="https://cdn.jsdelivr.net/gh/your-username/gnss.js@latest/dist/gnss.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/BrandonLewis/gnss.js@cdn-dist/dist/gnss.js"></script>
 
 <!-- Latest version (production, minified) -->
-<script src="https://cdn.jsdelivr.net/gh/your-username/gnss.js@latest/dist/gnss.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/BrandonLewis/gnss.js@cdn-dist/dist/gnss.min.js"></script>
 
 <!-- Specific version (recommended for production) -->
-<script src="https://cdn.jsdelivr.net/gh/your-username/gnss.js@0.1.0/dist/gnss.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/BrandonLewis/gnss.js@0.1.0/dist/gnss.min.js"></script>
 
 <!-- ESM build for modern browsers -->
 <script type="module">
-  import { GnssModule } from 'https://cdn.jsdelivr.net/gh/your-username/gnss.js@latest/dist/gnss.esm.js';
+  import { GnssModule } from 'https://cdn.jsdelivr.net/gh/BrandonLewis/gnss.js@cdn-dist/dist/gnss.esm.js';
 </script>
 ```
 
