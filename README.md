@@ -25,6 +25,12 @@ npm install gnss.js
 
 # Using yarn
 yarn add gnss.js
+
+# Using CDN with unpkg
+import GnssModule from 'https://unpkg.com/gnss.js@latest/dist/gnss.esm.js';
+
+# Using CDN with jsDelivr
+import GnssModule from 'https://cdn.jsdelivr.net/gh/BrandonLewis/gnss.js@cdn-dist/dist/gnss.esm.js';
 ```
 
 ### Browser (CDN)
