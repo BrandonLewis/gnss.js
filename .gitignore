@@ -33,3 +33,5 @@ Thumbs.db
 
 # Claude local settings
 **/.claude/settings.local.json
+/certs/cert.pem
+/certs/key.pem
