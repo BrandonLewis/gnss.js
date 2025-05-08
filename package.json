@@ -1,19 +1,22 @@
 {
   "name": "gnss.js",
-  "version": "1.0.0",
-  "description": "GNSS device connection and positioning module for RTK surveying",
+  "version": "0.1.0",
+  "description": "JavaScript module for GNSS device connections, NMEA parsing, and NTRIP client functionality",
   "main": "dist/gnss.js",
   "module": "dist/gnss.esm.js",
+  "browser": "dist/gnss.js",
   "files": [
     "dist",
-    "src"
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
-    "build": "echo \"Build script to be implemented with Rollup\"",
-    "dev": "echo \"Dev script to be implemented with Rollup watch mode\"",
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint 'src/**/*.js'",
-    "docs": "jsdoc -c jsdoc.config.json"
+    "docs": "jsdoc -c jsdoc.config.json",
+    "prepublishOnly": "npm run lint && npm run build"
   },
   "keywords": [
     "gnss",
@@ -22,14 +25,31 @@
     "bluetooth",
     "serial",
     "nmea",
-    "ntrip"
+    "ntrip",
+    "gps",
+    "gis",
+    "webserial",
+    "webbluetooth"
   ],
-  "author": "",
+  "author": "Your Name <your.email@example.com>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/gnss.js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/gnss.js/issues"
+  },
+  "homepage": "https://github.com/yourusername/gnss.js#readme",
   "devDependencies": {
-    "eslint": "^9.26.0",
-    "jsdoc": "^4.0.4",
-    "jsdoc-to-markdown": "^8.0.3"
+    "eslint": "^8.45.0",
+    "jsdoc": "^4.0.2",
+    "jsdoc-to-markdown": "^8.0.0",
+    "rollup": "^3.26.2",
+    "rollup-plugin-terser": "^7.0.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   },
   "type": "module"
 }
