@@ -35,12 +35,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yourusername/gnss.js.git"
+    "url": "git+https://github.com/BrandonLewis/gnss.js.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/gnss.js/issues"
+    "url": "https://github.com/BrandonLewis/gnss.js/issues"
   },
-  "homepage": "https://github.com/yourusername/gnss.js#readme",
+  "homepage": "https://github.com/BrandonLewis/gnss.js#readme",
   "devDependencies": {
     "@eslint/config-array": "^0.20.0",
     "@eslint/js": "^9.26.0",
