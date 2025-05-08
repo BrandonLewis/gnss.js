@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>gnss.js Basic Usage Example</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+    button {
+      padding: 0.5rem 1rem;
+      margin: 0.5rem;
+      cursor: pointer;
+    }
+    #status {
+      margin: 1rem 0;
+      padding: 1rem;
+      background-color: #f5f5f5;
+      border-radius: 4px;
+    }
+    #position {
+      margin: 1rem 0;
+      padding: 1rem;
+      background-color: #e0f7fa;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>gnss.js Basic Usage Example</h1>
+  
+  <div>
+    <button id="connectBluetooth">Connect via Bluetooth</button>
+    <button id="connectSerial">Connect via Serial</button>
+    <button id="disconnectDevice">Disconnect Device</button>
+  </div>
+  
+  <div>
+    <button id="connectNtrip">Connect NTRIP</button>
+    <button id="disconnectNtrip">Disconnect NTRIP</button>
+  </div>
+  
+  <div id="status">Status: Disconnected</div>
+  <div id="position">Position: No data</div>
+  
+  <script type="module">
+    import { GnssModule } from '../dist/gnss.esm.js';
+    
+    // Create a new GNSS module instance
+    const gnss = new GnssModule({
+      debugSettings: {
+        info: true,
+        debug: true,
+        errors: true
+      }
+    });
+    
+    // UI Elements
+    const statusEl = document.getElementById('status');
+    const positionEl = document.getElementById('position');
+    
+    // Set up event listeners
+    gnss.on('position', (position) => {
+      positionEl.innerHTML = `
+        <h3>Position Data</h3>
+        <p>Latitude: ${position.latitude.toFixed(6)}</p>
+        <p>Longitude: ${position.longitude.toFixed(6)}</p>
+        <p>Altitude: ${position.altitude ? position.altitude.toFixed(2) + 'm' : 'N/A'}</p>
+        <p>Fix Quality: ${position.quality || 0}</p>
+        <p>Satellites: ${position.satellites || 0}</p>
+        <p>Timestamp: ${position.timestamp.toLocaleTimeString()}</p>
+      `;
+    });
+    
+    gnss.on('connection:connected', (data) => {
+      statusEl.innerHTML = `Status: Connected via ${data.method}`;
+      statusEl.style.backgroundColor = '#e8f5e9';
+    });
+    
+    gnss.on('connection:disconnected', () => {
+      statusEl.innerHTML = 'Status: Disconnected';
+      statusEl.style.backgroundColor = '#f5f5f5';
+    });
+    
+    gnss.on('connection:error', (data) => {
+      statusEl.innerHTML = `Error: ${data.message}`;
+      statusEl.style.backgroundColor = '#ffebee';
+    });
+    
+    gnss.on('ntrip:connected', (data) => {
+      statusEl.innerHTML += `<br>NTRIP: Connected to ${data.mountpoint}`;
+    });
+    
+    gnss.on('ntrip:disconnected', () => {
+      statusEl.innerHTML = statusEl.innerHTML.replace(/<br>NTRIP:.+/, '');
+    });
+    
+    // Button event handlers
+    document.getElementById('connectBluetooth').addEventListener('click', async () => {
+      try {
+        const success = await gnss.connectBluetooth();
+        if (!success) {
+          console.error('Failed to connect via Bluetooth');
+        }
+      } catch (error) {
+        console.error('Error connecting via Bluetooth:', error);
+      }
+    });
+    
+    document.getElementById('connectSerial').addEventListener('click', async () => {
+      try {
+        const success = await gnss.connectSerial();
+        if (!success) {
+          console.error('Failed to connect via Serial');
+        }
+      } catch (error) {
+        console.error('Error connecting via Serial:', error);
+      }
+    });
+    
+    document.getElementById('disconnectDevice').addEventListener('click', async () => {
+      try {
+        await gnss.disconnectDevice();
+      } catch (error) {
+        console.error('Error disconnecting device:', error);
+      }
+    });
+    
+    document.getElementById('connectNtrip').addEventListener('click', async () => {
+      try {
+        // Show a simple form to input NTRIP details
+        const host = prompt('NTRIP Host:', 'rtk2go.com');
+        const port = prompt('NTRIP Port:', '2101');
+        const mountpoint = prompt('NTRIP Mountpoint:');
+        const username = prompt('NTRIP Username (optional):');
+        const password = prompt('NTRIP Password (optional):');
+        
+        if (!host || !mountpoint) {
+          alert('Host and mountpoint are required');
+          return;
+        }
+        
+        const success = await gnss.connectNtrip({
+          host,
+          port: parseInt(port, 10),
+          mountpoint,
+          username,
+          password
+        });
+        
+        if (!success) {
+          console.error('Failed to connect to NTRIP');
+        }
+      } catch (error) {
+        console.error('Error connecting to NTRIP:', error);
+      }
+    });
+    
+    document.getElementById('disconnectNtrip').addEventListener('click', async () => {
+      try {
+        await gnss.disconnectNtrip();
+      } catch (error) {
+        console.error('Error disconnecting from NTRIP:', error);
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+{
+  "name": "gnss.js",
+  "version": "1.0.0",
+  "description": "GNSS device connection and positioning module for RTK surveying",
+  "main": "dist/gnss.js",
+  "module": "dist/gnss.esm.js",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "echo \"Build script to be implemented with Rollup\"",
+    "dev": "echo \"Dev script to be implemented with Rollup watch mode\"",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint 'src/**/*.js'",
+    "docs": "jsdoc -c jsdoc.config.json"
+  },
+  "keywords": [
+    "gnss",
+    "rtk",
+    "positioning",
+    "bluetooth",
+    "serial",
+    "nmea",
+    "ntrip"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^9.26.0",
+    "jsdoc": "^4.0.4",
+    "jsdoc-to-markdown": "^8.0.3"
+  },
+  "type": "module"
+}
