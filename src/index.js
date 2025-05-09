@@ -171,9 +171,6 @@ class GnssModule {
       // Important: This must be called directly in response to a user gesture
       // Create the options for requestDevice
       const requestOptions = {
-        // cannot have both acceptAllDevices and filters
-        acceptAllDevices: !options.filters,
-        filters: options.filters || null,
         optionalServices: [
           // Common UART services
           '6e400001-b5a3-f393-e0a9-e50e24dcca9e', // Nordic UART Service
@@ -192,7 +189,12 @@ class GnssModule {
           '00001101-0000-1000-8000-00805f9b34fb', // SPP
         ]
       };
-      
+      // cannot have both acceptAllDevices and filters
+      if (!options.filters) {
+        Object.assign(requestOptions, {acceptAllDevices:true});
+      } else {
+        Object.assign(requestOptions, {filters: options.filters});
+      }
       // Request device directly (this must happen in direct response to user gesture)
       const device = await navigator.bluetooth.requestDevice(requestOptions);
       
