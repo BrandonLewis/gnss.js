@@ -1,0 +1,1475 @@
+<!DOCTYPE html><html lang="en" style="font-size:16px"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Source: ntrip-client.js</title><!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]--><script src="scripts/third-party/hljs.js" defer="defer"></script><script src="scripts/third-party/hljs-line-num.js" defer="defer"></script><script src="scripts/third-party/popper.js" defer="defer"></script><script src="scripts/third-party/tippy.js" defer="defer"></script><script src="scripts/third-party/tocbot.min.js"></script><script>var baseURL="/",locationPathname="";baseURL=(locationPathname=document.location.pathname).substr(0,locationPathname.lastIndexOf("/")+1)</script><link rel="stylesheet" href="styles/clean-jsdoc-theme.min.css"><svg aria-hidden="true" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="display:none"><defs><symbol id="copy-icon" viewbox="0 0 488.3 488.3"><g><path d="M314.25,85.4h-227c-21.3,0-38.6,17.3-38.6,38.6v325.7c0,21.3,17.3,38.6,38.6,38.6h227c21.3,0,38.6-17.3,38.6-38.6V124    C352.75,102.7,335.45,85.4,314.25,85.4z M325.75,449.6c0,6.4-5.2,11.6-11.6,11.6h-227c-6.4,0-11.6-5.2-11.6-11.6V124    c0-6.4,5.2-11.6,11.6-11.6h227c6.4,0,11.6,5.2,11.6,11.6V449.6z"/><path d="M401.05,0h-227c-21.3,0-38.6,17.3-38.6,38.6c0,7.5,6,13.5,13.5,13.5s13.5-6,13.5-13.5c0-6.4,5.2-11.6,11.6-11.6h227    c6.4,0,11.6,5.2,11.6,11.6v325.7c0,6.4-5.2,11.6-11.6,11.6c-7.5,0-13.5,6-13.5,13.5s6,13.5,13.5,13.5c21.3,0,38.6-17.3,38.6-38.6    V38.6C439.65,17.3,422.35,0,401.05,0z"/></g></symbol><symbol id="search-icon" viewBox="0 0 512 512"><g><g><path d="M225.474,0C101.151,0,0,101.151,0,225.474c0,124.33,101.151,225.474,225.474,225.474    c124.33,0,225.474-101.144,225.474-225.474C450.948,101.151,349.804,0,225.474,0z M225.474,409.323    c-101.373,0-183.848-82.475-183.848-183.848S124.101,41.626,225.474,41.626s183.848,82.475,183.848,183.848    S326.847,409.323,225.474,409.323z"/></g></g><g><g><path d="M505.902,476.472L386.574,357.144c-8.131-8.131-21.299-8.131-29.43,0c-8.131,8.124-8.131,21.306,0,29.43l119.328,119.328    c4.065,4.065,9.387,6.098,14.715,6.098c5.321,0,10.649-2.033,14.715-6.098C514.033,497.778,514.033,484.596,505.902,476.472z"/></g></g></symbol><symbol id="font-size-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M11.246 15H4.754l-2 5H.6L7 4h2l6.4 16h-2.154l-2-5zm-.8-2L8 6.885 5.554 13h4.892zM21 12.535V12h2v8h-2v-.535a4 4 0 1 1 0-6.93zM19 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></symbol><symbol id="add-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2z"/></symbol><symbol id="minus-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M5 11h14v2H5z"/></symbol><symbol id="dark-theme-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M10 7a7 7 0 0 0 12 4.9v.1c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2h.1A6.979 6.979 0 0 0 10 7zm-6 5a8 8 0 0 0 15.062 3.762A9 9 0 0 1 8.238 4.938 7.999 7.999 0 0 0 4 12z"/></symbol><symbol id="light-theme-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12zm0-2a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM11 1h2v3h-2V1zm0 19h2v3h-2v-3zM3.515 4.929l1.414-1.414L7.05 5.636 5.636 7.05 3.515 4.93zM16.95 18.364l1.414-1.414 2.121 2.121-1.414 1.414-2.121-2.121zm2.121-14.85l1.414 1.415-2.121 2.121-1.414-1.414 2.121-2.121zM5.636 16.95l1.414 1.414-2.121 2.121-1.414-1.414 2.121-2.121zM23 11v2h-3v-2h3zM4 11v2H1v-2h3z"/></symbol><symbol id="reset-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M18.537 19.567A9.961 9.961 0 0 1 12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10c0 2.136-.67 4.116-1.81 5.74L17 12h3a8 8 0 1 0-2.46 5.772l.997 1.795z"/></symbol><symbol id="down-icon" viewBox="0 0 16 16"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.7803 6.21967C13.0732 6.51256 13.0732 6.98744 12.7803 7.28033L8.53033 11.5303C8.23744 11.8232 7.76256 11.8232 7.46967 11.5303L3.21967 7.28033C2.92678 6.98744 2.92678 6.51256 3.21967 6.21967C3.51256 5.92678 3.98744 5.92678 4.28033 6.21967L8 9.93934L11.7197 6.21967C12.0126 5.92678 12.4874 5.92678 12.7803 6.21967Z"></path></symbol><symbol id="codepen-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.5 13.202L13 15.535v3.596L19.197 15 16.5 13.202zM14.697 12L12 10.202 9.303 12 12 13.798 14.697 12zM20 10.869L18.303 12 20 13.131V10.87zM19.197 9L13 4.869v3.596l3.5 2.333L19.197 9zM7.5 10.798L11 8.465V4.869L4.803 9 7.5 10.798zM4.803 15L11 19.131v-3.596l-3.5-2.333L4.803 15zM4 13.131L5.697 12 4 10.869v2.262zM2 9a1 1 0 0 1 .445-.832l9-6a1 1 0 0 1 1.11 0l9 6A1 1 0 0 1 22 9v6a1 1 0 0 1-.445.832l-9 6a1 1 0 0 1-1.11 0l-9-6A1 1 0 0 1 2 15V9z"/></symbol><symbol id="close-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 10.586l4.95-4.95 1.414 1.414-4.95 4.95 4.95 4.95-1.414 1.414-4.95-4.95-4.95 4.95-1.414-1.414 4.95-4.95-4.95-4.95L7.05 5.636z"/></symbol><symbol id="menu-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z"/></symbol></defs></svg></head><body data-theme="dark"><div class="sidebar-container"><div class="sidebar" id="sidebar"><div class="sidebar-items-container"><div class="sidebar-section-title with-arrow" data-isopen="false" id="sidebar-classes"><div>Classes</div><svg><use xlink:href="#down-icon"></use></svg></div><div class="sidebar-section-children-container"><div class="sidebar-section-children"><a href="BluetoothConnection.html">BluetoothConnection</a></div><div class="sidebar-section-children"><a href="ConnectionHandler.html">ConnectionHandler</a></div><div class="sidebar-section-children"><a href="ConnectionManager.html">ConnectionManager</a></div><div class="sidebar-section-children"><a href="DeviceSettings.html">DeviceSettings</a></div><div class="sidebar-section-children"><a href="EventEmitter.html">EventEmitter</a></div><div class="sidebar-section-children"><a href="GnssModule.html">GnssModule</a></div><div class="sidebar-section-children"><a href="NmeaParser.html">NmeaParser</a></div><div class="sidebar-section-children"><a href="NtripClient.html">NtripClient</a></div><div class="sidebar-section-children"><a href="RtkSettings.html">RtkSettings</a></div><div class="sidebar-section-children"><a href="RtkStatus.html">RtkStatus</a></div><div class="sidebar-section-children"><a href="Settings.html">Settings</a></div><div class="sidebar-section-children"><a href="SettingsPage.html">SettingsPage</a></div></div></div></div></div><div class="navbar-container" id="VuAckcnZhf"><nav class="navbar"><div class="navbar-left-items"></div><div class="navbar-right-items"><div class="navbar-right-item"><button class="icon-button search-button" aria-label="open-search"><svg><use xlink:href="#search-icon"></use></svg></button></div><div class="navbar-right-item"><button class="icon-button theme-toggle" aria-label="toggle-theme"><svg><use class="theme-svg-use" xlink:href="#light-theme-icon"></use></svg></button></div><div class="navbar-right-item"><button class="icon-button font-size" aria-label="change-font-size"><svg><use xlink:href="#font-size-icon"></use></svg></button></div></div><nav></nav></nav></div><div class="toc-container"><div class="toc-content"><span class="bold">On this page</span><div id="eed4d2a0bfd64539bb9df78095dec881"></div></div></div><div class="body-wrapper"><div class="main-content"><div class="main-wrapper"><section id="source-page" class="source-page"><header><h1 id="title" class="has-anchor">ntrip-client.js</h1></header><article><pre class="prettyprint source lang-js"><code>/**
+ * NtripClient - Handles connections to NTRIP casters for RTK corrections
+ * with multiple connection approaches (direct, proxy, WebSocket)
+ */
+export class NtripClient {
+  /**
+   * Create a new NTRIP client
+   * @param {Object} eventEmitter - Event emitter for communication
+   * @param {Object} options - Configuration options
+   */
+  constructor(eventEmitter, options = {}) {
+    this.eventEmitter = eventEmitter;
+    this.debug = options.debug || {};
+    this.isConnected = false;
+    this.isConnecting = false;
+    this.autoReconnect = true;
+    this.reconnectAttempts = 0;
+    this.maxReconnectAttempts = 5;
+    this.reconnectDelay = 5000; // 5 seconds initial reconnect delay
+    
+    // Default configuration
+    this.config = {
+      // Basic NTRIP configuration
+      casterHost: 'rtk2go.com',
+      casterPort: 2101,
+      mountpoint: 'RTCM3_IMAX',
+      username: '',
+      password: '',
+      sendGga: true,
+      
+      // Connection options
+      connectionMode: 'auto', // 'auto', 'direct', 'proxy', 'websocket'
+      proxyUrl: 'http://localhost:3000',  // URL to proxy server (relative or absolute)
+      websocketUrl: 'ws://localhost:3000/ws', // WebSocket endpoint
+      
+      // Advanced settings
+      ggaUpdateInterval: 10 // Seconds between GGA updates
+    };
+    
+    // Connection handling
+    this.abortController = null;  // For direct fetch
+    this.reader = null;           // For direct fetch
+    this.webSocket = null;        // For WebSocket
+    this.activeMode = null;       // Which connection mode is active
+    
+    // GGA handling
+    this.ggaInterval = null;
+    this.lastGga = null;  // Last GGA sentence sent
+    this.lastPosition = null; // Last position data for generating GGA
+    
+    // RTCM statistics
+    this.rtcmStats = {
+      messagesReceived: 0,
+      bytesSent: 0,
+      bytesReceived: 0,
+      lastMessageTime: null,
+      correctionAge: null
+    };
+    
+    // Device manager for sending corrections
+    this.deviceManager = null;
+    this.rtcmQueue = [];
+    
+    // Bind methods
+    this.handleSocketMessage = this.handleSocketMessage.bind(this);
+    this.handleSocketClose = this.handleSocketClose.bind(this);
+    this.handleSocketError = this.handleSocketError.bind(this);
+  }
+
+  /**
+   * Set the device manager for sending corrections
+   * @param {Object} deviceManager - ConnectionManager or BluetoothManager
+   */
+  setDeviceManager(deviceManager) {
+    this.deviceManager = deviceManager;
+    
+    // If this is a legacy BluetothManager reference, keep it for backward compatibility
+    if (deviceManager &amp;&amp; deviceManager.name === 'bluetooth') {
+      this.bluetoothManager = deviceManager;
+    }
+  }
+
+  /**
+   * Connect to NTRIP caster using the configured method
+   * @param {Object} config - Connection configuration
+   * @returns {Promise&lt;boolean>} Whether connection was successful
+   */
+  async connect(config = {}) {
+    if (this.isConnected) {
+      console.log('Already connected to NTRIP caster');
+      return true;
+    }
+    
+    if (this.isConnecting) {
+      console.log('Already connecting to NTRIP caster');
+      return false;
+    }
+    
+    // Update configuration with provided options
+    this.config = { 
+      ...this.config, 
+      ...config 
+    };
+    
+    // Validate configuration
+    console.log('Validating NTRIP config:', {
+      casterHost: this.config.casterHost, 
+      mountpoint: this.config.mountpoint,
+      connectionMode: this.config.connectionMode
+    });
+    
+    if (!this.config.casterHost || this.config.casterHost === '') {
+      console.error('NTRIP caster host is missing or empty');
+      this.eventEmitter.emit('ntrip:error', {
+        message: 'Invalid NTRIP configuration. Host is required.'
+      });
+      return false;
+    }
+    
+    if (!this.config.mountpoint || this.config.mountpoint === '') {
+      console.error('NTRIP mountpoint is missing or empty');
+      this.eventEmitter.emit('ntrip:error', {
+        message: 'Invalid NTRIP configuration. Mountpoint is required.'
+      });
+      return false;
+    }
+    
+    this.isConnecting = true;
+    this.eventEmitter.emit('ntrip:connecting', { 
+      casterHost: this.config.casterHost,
+      mountpoint: this.config.mountpoint
+    });
+    
+    // Determine connection mode
+    const connectionMode = this.config.connectionMode;
+    
+    // Auto mode - try WebSocket first, then direct, then proxy
+    if (connectionMode === 'auto') {
+      // Try WebSocket first
+      try {
+        const wsSuccess = await this.connectWebSocket();
+        if (wsSuccess) {
+          this.activeMode = 'websocket';
+          return true;
+        }
+      } catch (wsError) {
+        console.log('WebSocket connection failed, falling back to direct:', wsError);
+      }
+      
+      // Try direct connection
+      try {
+        const directSuccess = await this.connectDirect();
+        if (directSuccess) {
+          this.activeMode = 'direct';
+          return true;
+        }
+      } catch (directError) {
+        console.log('Direct connection failed, falling back to proxy:', directError);
+      }
+      
+      // Try proxy as last resort
+      try {
+        const proxySuccess = await this.connectProxy();
+        if (proxySuccess) {
+          this.activeMode = 'proxy';
+          return true;
+        }
+      } catch (proxyError) {
+        this.isConnecting = false;
+        this.eventEmitter.emit('ntrip:error', {
+          message: 'All connection methods failed',
+          error: proxyError
+        });
+        return false;
+      }
+    } 
+    // Specific connection modes
+    else if (connectionMode === 'websocket') {
+      try {
+        const success = await this.connectWebSocket();
+        if (success) {
+          this.activeMode = 'websocket';
+          return true;
+        }
+      } catch (error) {
+        this.isConnecting = false;
+        this.eventEmitter.emit('ntrip:error', {
+          message: 'WebSocket connection failed',
+          error
+        });
+        return false;
+      }
+    }
+    else if (connectionMode === 'direct') {
+      try {
+        const success = await this.connectDirect();
+        if (success) {
+          this.activeMode = 'direct';
+          return true;
+        }
+      } catch (error) {
+        this.isConnecting = false;
+        this.eventEmitter.emit('ntrip:error', {
+          message: 'Direct connection failed',
+          error
+        });
+        return false;
+      }
+    }
+    else if (connectionMode === 'proxy') {
+      try {
+        const success = await this.connectProxy();
+        if (success) {
+          this.activeMode = 'proxy';
+          return true;
+        }
+      } catch (error) {
+        this.isConnecting = false;
+        this.eventEmitter.emit('ntrip:error', {
+          message: 'Proxy connection failed',
+          error
+        });
+        return false;
+      }
+    }
+    
+    // If we reach here, all connection attempts failed
+    this.isConnecting = false;
+    this.eventEmitter.emit('ntrip:error', {
+      message: 'All connection methods failed'
+    });
+    return false;
+  }
+  
+  /**
+   * Connect to NTRIP caster using WebSocket to proxy
+   * @returns {Promise&lt;boolean>} Whether connection was successful
+   */
+  async connectWebSocket() {
+    return new Promise((resolve, reject) => {
+      try {
+        // Determine WebSocket URL
+        let wsUrl = this.config.websocketUrl;
+        
+        // If it's a relative URL, make it absolute
+        if (wsUrl.startsWith('/')) {
+          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+          wsUrl = `${protocol}//${window.location.host}${wsUrl}`;
+        }
+        
+        // Handle mixed content issue - enforce WSS if we're connecting from HTTPS
+        if (window.location.protocol === 'https:' &amp;&amp; 
+            wsUrl.startsWith('ws:') &amp;&amp; 
+            (wsUrl.includes('192.168.') || 
+             wsUrl.includes('127.0.0.1') || 
+             wsUrl.includes('localhost'))) {
+          console.log('Adjusting WebSocket URL protocol to match page protocol (WSS)');
+          wsUrl = wsUrl.replace('ws:', 'wss:');
+        }
+        
+        console.log(`Connecting to NTRIP via WebSocket at ${wsUrl}`, {
+          casterHost: this.config.casterHost,
+          mountpoint: this.config.mountpoint,
+          connectionMode: this.config.connectionMode
+        });
+        this.webSocket = new WebSocket(wsUrl);
+        
+        // Set up connection timeout
+        const connectionTimeout = setTimeout(() => {
+          if (this.webSocket &amp;&amp; this.webSocket.readyState !== WebSocket.OPEN) {
+            this.webSocket.close();
+            reject(new Error('WebSocket connection timeout'));
+          }
+        }, 10000); // 10 second timeout
+        
+        // Set up event handlers
+        this.webSocket.onopen = () => {
+          clearTimeout(connectionTimeout);
+          
+          console.log('WebSocket connected to proxy, sending NTRIP connection request');
+          
+          // Send connection request to proxy
+          this.webSocket.send(JSON.stringify({
+            command: 'connect',
+            config: {
+              casterHost: this.config.casterHost,
+              casterPort: this.config.casterPort,
+              mountpoint: this.config.mountpoint,
+              username: this.config.username,
+              password: this.config.password
+            }
+          }));
+        };
+        
+        // Connection status handler
+        this.webSocket.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            
+            // Handle connection status message
+            if (data.type === 'status') {
+              if (data.connected) {
+                // Successfully connected
+                this.isConnected = true;
+                this.isConnecting = false;
+                this.reconnectAttempts = 0;
+                
+                // Setup regular message handler
+                this.webSocket.onmessage = this.handleSocketMessage;
+                
+                // Setup other event handlers
+                this.webSocket.onclose = this.handleSocketClose;
+                this.webSocket.onerror = this.handleSocketError;
+                
+                // Start GGA updates if enabled
+                if (this.config.sendGga &amp;&amp; this.lastGga) {
+                  this.startGgaUpdates();
+                }
+                
+                // Emit connected event
+                this.eventEmitter.emit('ntrip:connected', {
+                  casterHost: this.config.casterHost,
+                  mountpoint: this.config.mountpoint,
+                  mode: 'websocket'
+                });
+                
+                resolve(true);
+              } else {
+                // Connection failed
+                reject(new Error(data.message || 'WebSocket connection failed'));
+              }
+            } else if (data.type === 'error') {
+              reject(new Error(data.message || 'WebSocket connection error'));
+            }
+          } catch (e) {
+            // Not JSON, unexpected during connection phase
+            reject(new Error('Unexpected binary data during WebSocket connection'));
+          }
+        };
+        
+        // Initial error handler just for connection phase
+        this.webSocket.onerror = (error) => {
+          clearTimeout(connectionTimeout);
+          reject(new Error('WebSocket connection error'));
+        };
+        
+        // Initial close handler just for connection phase
+        this.webSocket.onclose = (event) => {
+          clearTimeout(connectionTimeout);
+          reject(new Error(`WebSocket closed: ${event.code} - ${event.reason}`));
+        };
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+  
+  /**
+   * Connect directly to NTRIP caster
+   * @returns {Promise&lt;boolean>} Whether connection was successful
+   */
+  async connectDirect() {
+    try {
+      // Determine if we're on an HTTPS page
+      const isHttpsPage = typeof window !== 'undefined' &amp;&amp; window.location &amp;&amp; window.location.protocol === 'https:';
+      
+      // Create URL for NTRIP connection
+      const protocol = this.config.casterPort === 443 ? 'https' : 'http';
+      
+      // Check for mixed content scenario - HTTPS page trying to access HTTP NTRIP caster
+      if (isHttpsPage &amp;&amp; protocol === 'http') {
+        console.log('Mixed content issue detected:', {
+          isHttpsPage,
+          protocol,
+          casterHost: this.config.casterHost,
+          mountpoint: this.config.mountpoint,
+          connectionMode: this.config.connectionMode
+        });
+        
+        this.eventEmitter.emit('ntrip:info', { 
+          message: 'Mixed content detected - HTTPS page trying to access HTTP NTRIP. Switching to proxy/WebSocket.'
+        });
+        
+        // Try WebSocket first if auto mode
+        if (this.config.connectionMode === 'auto' || this.config.connectionMode === 'websocket') {
+          try {
+            return await this.connectWebSocket();
+          } catch (wsError) {
+            this.eventEmitter.emit('ntrip:info', { 
+              message: 'WebSocket connection failed after mixed content detection, trying proxy'
+            });
+          }
+        }
+        
+        // Fall back to proxy connection instead of direct
+        return await this.connectProxy();
+      }
+      
+      const url = `${protocol}://${this.config.casterHost}:${this.config.casterPort}/${this.config.mountpoint}`;
+      
+      // Prepare authentication headers if needed
+      const headers = new Headers({
+        'Accept': 'application/octet-stream',
+        'User-Agent': 'NTRIP WebGNSS Client'
+      });
+      
+      if (this.config.username &amp;&amp; this.config.password) {
+        const auth = btoa(`${this.config.username}:${this.config.password}`);
+        headers.append('Authorization', `Basic ${auth}`);
+      }
+      
+      // Create abort controller for clean disconnection
+      this.abortController = new AbortController();
+      
+      // Make the request
+      const response = await fetch(url, {
+        method: 'GET',
+        headers,
+        signal: this.abortController.signal
+      });
+      
+      // Check if connection was successful
+      if (!response.ok) {
+        throw new Error(`NTRIP server error: ${response.status} ${response.statusText}`);
+      }
+      
+      // Get a reader for the response body
+      const contentType = response.headers.get('content-type');
+      
+      // For debugging - log content type
+      this.eventEmitter.emit('ntrip:info', { 
+        message: `Direct NTRIP connection established, content type: ${contentType}`
+      });
+      
+      // Start reading from the response stream
+      this.reader = response.body.getReader();
+      this.isConnected = true;
+      this.isConnecting = false;
+      this.reconnectAttempts = 0;
+      
+      // Emit connected event
+      this.eventEmitter.emit('ntrip:connected', {
+        casterHost: this.config.casterHost,
+        mountpoint: this.config.mountpoint,
+        mode: 'direct'
+      });
+      
+      // If we have a GGA message or position, start sending it periodically
+      if (this.config.sendGga &amp;&amp; (this.lastGga || this.lastPosition)) {
+        this.startGgaUpdates();
+      }
+      
+      // Start processing the stream
+      this.readStream();
+      
+      return true;
+    } catch (error) {
+      console.error('Direct connection error:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Connect to NTRIP caster via HTTP proxy
+   * @returns {Promise&lt;boolean>} Whether connection was successful
+   */
+  async connectProxy() {
+    try {
+      // Determine proxy URL
+      let proxyUrl = this.config.proxyUrl;
+      
+      // If it's a relative URL, make it absolute
+      if (proxyUrl.startsWith('/')) {
+        const protocol = window.location.protocol;
+        proxyUrl = `${protocol}//${window.location.host}${proxyUrl}`;
+      }
+      
+      // Handle mixed content issue - enforce HTTP if we're connecting to a local IP
+      // This avoids HTTPS to HTTP mixed content blocking
+      if (window.location.protocol === 'https:' &amp;&amp; 
+          proxyUrl.startsWith('http:') &amp;&amp; 
+          (proxyUrl.includes('192.168.') || 
+           proxyUrl.includes('127.0.0.1') || 
+           proxyUrl.includes('localhost'))) {
+        console.log('Adjusting proxy URL protocol to match page protocol (HTTPS)');
+        proxyUrl = proxyUrl.replace('http:', 'https:');
+      }
+      
+      // Add mountpoint and parameters
+      proxyUrl = `${proxyUrl}/${this.config.mountpoint}`;
+      const params = new URLSearchParams({
+        host: this.config.casterHost,
+        port: this.config.casterPort.toString()
+      });
+      
+      if (this.config.username &amp;&amp; this.config.password) {
+        params.append('user', this.config.username);
+        params.append('password', this.config.password);
+      }
+      
+      proxyUrl += `?${params.toString()}`;
+      
+      // Create abort controller for clean disconnection
+      this.abortController = new AbortController();
+      
+      // Make the request to the proxy
+      const response = await fetch(proxyUrl, {
+        method: 'GET',
+        signal: this.abortController.signal
+      });
+      
+      // Check if connection was successful
+      if (!response.ok) {
+        throw new Error(`Proxy server error: ${response.status} ${response.statusText}`);
+      }
+      
+      // Start reading from the response stream
+      this.reader = response.body.getReader();
+      this.isConnected = true;
+      this.isConnecting = false;
+      this.reconnectAttempts = 0;
+      
+      // Emit connected event
+      this.eventEmitter.emit('ntrip:connected', {
+        casterHost: this.config.casterHost,
+        mountpoint: this.config.mountpoint,
+        mode: 'proxy'
+      });
+      
+      // If we have a GGA message, start sending it periodically via proxy
+      if (this.config.sendGga &amp;&amp; (this.lastGga || this.lastPosition)) {
+        this.startGgaUpdates();
+      }
+      
+      // Start processing the stream
+      this.readStream();
+      
+      return true;
+    } catch (error) {
+      console.error('Proxy connection error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Read and process the response stream from the NTRIP caster (for direct/proxy mode)
+   */
+  async readStream() {
+    try {
+      // Loop until disconnected or error occurs
+      while (this.isConnected) {
+        const { value, done } = await this.reader.read();
+        
+        // If stream is closed, exit the loop
+        if (done) {
+          this.handleDisconnect({ reason: 'Stream closed' });
+          break;
+        }
+        
+        // Process the chunk of binary data
+        if (value) {
+          // Update stats
+          this.rtcmStats.messagesReceived++;
+          this.rtcmStats.lastMessageTime = new Date();
+          this.rtcmStats.bytesReceived += value.length;
+          
+          // Convert to ArrayBuffer and emit correction event
+          this.eventEmitter.emit('ntrip:rtcm', {
+            data: value.buffer,
+            stats: { ...this.rtcmStats }
+          });
+          
+          // Forward to device if available
+          this.forwardRtcmToDevice(value.buffer);
+        }
+      }
+    } catch (error) {
+      // Only emit error if it's not an abort error (which happens during normal disconnect)
+      if (error.name !== 'AbortError') {
+        this.eventEmitter.emit('ntrip:error', {
+          message: 'Error reading NTRIP stream',
+          error
+        });
+      }
+      this.handleDisconnect({ reason: error.message });
+    }
+  }
+
+  /**
+   * Handle WebSocket message (for WebSocket mode)
+   * @param {MessageEvent} event - WebSocket message event
+   */
+  handleSocketMessage(event) {
+    try {
+      // Try to parse as JSON first (for control messages)
+      const data = JSON.parse(event.data);
+      
+      // Handle status messages
+      if (data.type === 'status') {
+        if (!data.connected &amp;&amp; this.isConnected) {
+          this.handleDisconnect({ reason: data.message || 'Connection closed by server' });
+        }
+        return;
+      }
+      
+      // Handle error messages
+      if (data.type === 'error') {
+        this.eventEmitter.emit('ntrip:error', {
+          message: data.message || 'Unknown error'
+        });
+        return;
+      }
+      
+      // Handle info messages
+      if (data.type === 'info') {
+        this.eventEmitter.emit('ntrip:info', {
+          message: data.message
+        });
+        return;
+      }
+      
+      // Handle ping messages (keep alive)
+      if (data.type === 'ping') {
+        // Just acknowledge the ping silently, no need to log or emit an event
+        // Optionally could respond with a pong message if the server expects it
+        return;
+      }
+      
+      // Unknown JSON message
+      console.warn('Unknown NTRIP message type:', data.type);
+    } catch (e) {
+      // Not JSON, treat as binary RTCM data
+      this.handleRtcmData(event.data);
+    }
+  }
+  
+  /**
+   * Handle WebSocket close event
+   * @param {CloseEvent} event - WebSocket close event
+   */
+  handleSocketClose(event) {
+    console.log(`WebSocket closed: ${event.code} - ${event.reason}`);
+    this.handleDisconnect({
+      reason: `WebSocket closed: ${event.code} - ${event.reason}`
+    });
+  }
+  
+  /**
+   * Handle WebSocket error event
+   * @param {Event} event - WebSocket error event
+   */
+  handleSocketError(event) {
+    console.error('WebSocket error:', event);
+    this.eventEmitter.emit('ntrip:error', {
+      message: 'WebSocket error',
+      error: event
+    });
+  }
+  
+  /**
+   * Handle binary RTCM data from WebSocket
+   * @param {ArrayBuffer|Blob} data - RTCM data
+   */
+  async handleRtcmData(data) {
+    try {
+      // Convert data to ArrayBuffer if it's a Blob
+      let binaryData;
+      if (data instanceof Blob) {
+        binaryData = await data.arrayBuffer();
+      } else if (data instanceof ArrayBuffer) {
+        binaryData = data;
+      } else {
+        console.warn('Received RTCM data in unknown format:', typeof data);
+        return;
+      }
+      
+      // Verify if data is really RTCM3 format (should start with 0xD3 preamble)
+      const isRtcm = this.isValidRtcmData(binaryData);
+      
+      // Update stats
+      this.rtcmStats.messagesReceived++;
+      this.rtcmStats.lastMessageTime = new Date();
+      this.rtcmStats.bytesReceived += binaryData.byteLength;
+      this.updateCorrectionAge();
+      
+      // If it's not valid RTCM, check if it might be a sourcetable
+      if (!isRtcm) {
+        try {
+          const textDecoder = new TextDecoder();
+          const dataString = textDecoder.decode(binaryData);
+          
+          // Check if it looks like a sourcetable response
+          if (dataString.includes('SOURCETABLE') || dataString.includes('STR;')) {
+            // Likely we received a sourcetable instead of RTCM data
+            // This often happens when the caster is waiting for a GGA position
+            this.eventEmitter.emit('ntrip:info', { 
+              message: 'Received sourcetable from NTRIP caster. The mountpoint requires GGA position data.'
+            });
+            
+            // Try to send GGA data immediately
+            if (this.config.sendGga &amp;&amp; (this.lastGga || this.lastPosition)) {
+              if (this.lastGga) {
+                this.sendGGA(this.lastGga);
+              } else if (this.lastPosition) {
+                const gga = this.createGgaSentence(this.lastPosition);
+                this.sendGGA(gga);
+              }
+            }
+            
+            // Don't forward sourcetable data to the device
+            return;
+          }
+        } catch (err) {
+          // Ignore errors in text decoding, it might still be binary data
+          // just not valid RTCM3
+        }
+      }
+      
+      // Emit RTCM data event regardless of validation
+      this.eventEmitter.emit('ntrip:rtcm', {
+        data: binaryData,
+        isValidRtcm: isRtcm,
+        stats: { ...this.rtcmStats }
+      });
+      
+      // Only forward valid RTCM data to the device
+      if (isRtcm) {
+        this.forwardRtcmToDevice(binaryData);
+      }
+    } catch (error) {
+      console.error('Error handling RTCM data:', error);
+    }
+  }
+  
+  /**
+   * Validate if the data is in RTCM3 format
+   * @param {ArrayBuffer} data - Binary data to validate
+   * @returns {boolean} Whether the data appears to be valid RTCM3
+   */
+  isValidRtcmData(data) {
+    if (!data || data.byteLength === 0) {
+      return false;
+    }
+    
+    try {
+      // RTCM3 messages must start with 0xD3 preamble
+      const dataView = new DataView(data);
+      const firstByte = dataView.getUint8(0);
+      
+      if (firstByte !== 0xD3) {
+        // Data doesn't start with 0xD3, likely not valid RTCM3
+        // Log first few bytes for debugging
+        if (this.debug?.errors || this.debug?.rtcmMessages) {
+          const bytes = new Uint8Array(data.slice(0, Math.min(10, data.byteLength)));
+          console.error('Invalid RTCM data - missing preamble 0xD3, instead got:', 
+            Array.from(bytes).map(b => '0x' + b.toString(16).padStart(2, '0')).join(' '));
+        }
+        return false;
+      }
+      
+      // Optionally decode more of the RTCM3 header for validation
+      if (data.byteLength >= 3) {
+        // Extract message length from RTCM3 header
+        const msgLength = ((dataView.getUint8(1) &amp; 0x03) &lt;&lt; 8) + dataView.getUint8(2);
+        
+        // Basic length validation (should at least be 6 bytes for header + CRC)
+        if (msgLength &lt; 3 || msgLength > 1023) {
+          if (this.debug?.errors) {
+            console.error(`RTCM3 message has invalid length: ${msgLength}`);
+          }
+          return false;
+        }
+        
+        // If we have enough data, extract the message type
+        if (data.byteLength >= 6) {
+          const msgType = ((dataView.getUint8(3) &amp; 0xFF) &lt;&lt; 4) + ((dataView.getUint8(4) &amp; 0xF0) >> 4);
+          
+          // Track message type in stats
+          if (!this.rtcmStats.messageTypes) {
+            this.rtcmStats.messageTypes = {};
+          }
+          
+          const typeStr = msgType.toString();
+          this.rtcmStats.messageTypes[typeStr] = (this.rtcmStats.messageTypes[typeStr] || 0) + 1;
+          
+          if (this.debug?.rtcmMessages) {
+            console.log(`RTCM3 message type: ${msgType}, length: ${msgLength}`);
+          }
+        }
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error validating RTCM data:', error);
+      return false;
+    }
+  }
+  
+  /**
+   * Forward RTCM data to connected device
+   * @param {ArrayBuffer} data - RTCM binary data to forward
+   */
+  forwardRtcmToDevice(data) {
+    try {
+      // Check if we have a deviceManager property set by the GNSS module
+      if ((this.deviceManager &amp;&amp; this.deviceManager.isDeviceConnected()) || 
+          (this.bluetoothManager &amp;&amp; this.bluetoothManager.isConnected)) {
+        
+        // Verify RTCM data format - RTCM3 messages should start with 0xD3 preamble
+        const dataView = new DataView(data);
+        const firstByte = dataView.getUint8(0);
+        
+        // Check for the RTCM3 preamble (0xD3)
+        if (firstByte === 0xD3) {
+          if (this.debug?.debug || this.debug?.rtcmMessages) {
+            const msgLength = ((dataView.getUint8(1) &amp; 0x03) &lt;&lt; 8) + dataView.getUint8(2);
+            const msgType = ((dataView.getUint8(3) &amp; 0xFF) &lt;&lt; 4) + ((dataView.getUint8(4) &amp; 0xF0) >> 4);
+            
+            console.log(`Forwarding RTCM message type ${msgType}, length ${msgLength} (${data.byteLength} bytes) to device`);
+            
+            // Log the first 10 bytes for debugging (hex format)
+            if (this.debug?.debug) {
+              const bytes = new Uint8Array(data.slice(0, Math.min(10, data.byteLength)));
+              console.log('RTCM header bytes:', Array.from(bytes).map(b => '0x' + b.toString(16).padStart(2, '0')).join(' '));
+            }
+          }
+          
+          // Send the intact binary data to the device - CRITICAL: do not modify the data
+          // Use ConnectionManager if available, fall back to BluetoothManager for backward compatibility
+          if (this.deviceManager &amp;&amp; this.deviceManager.isDeviceConnected()) {
+            this.deviceManager.sendData(data);
+            return true;
+          } else if (this.bluetoothManager &amp;&amp; this.bluetoothManager.isConnected) {
+            this.bluetoothManager.sendData(data);
+            return true;
+          }
+        } else {
+          if (this.debug?.errors) {
+            console.error(`Invalid RTCM data - missing preamble 0xD3, instead got 0x${firstByte.toString(16)}`);
+            
+            // Log the first 10 bytes for debugging (hex format)
+            const bytes = new Uint8Array(data.slice(0, Math.min(10, data.byteLength)));
+            console.error('Invalid RTCM bytes:', Array.from(bytes).map(b => '0x' + b.toString(16).padStart(2, '0')).join(' '));
+          }
+          return false;
+        }
+      } else if (this.debug?.debug) {
+        console.log('No device connected, cannot forward RTCM data');
+      }
+      return false;
+    } catch (error) {
+      console.error('Error forwarding RTCM data to device:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Disconnect from NTRIP caster
+   */
+  disconnect() {
+    if (!this.isConnected &amp;&amp; !this.isConnecting) {
+      return;
+    }
+    
+    try {
+      // Stop GGA updates
+      this.stopGgaUpdates();
+      
+      // WebSocket mode
+      if (this.activeMode === 'websocket' &amp;&amp; this.webSocket) {
+        // Send disconnect command to proxy
+        if (this.webSocket.readyState === WebSocket.OPEN) {
+          this.webSocket.send(JSON.stringify({
+            command: 'disconnect'
+          }));
+        }
+        
+        // Close WebSocket
+        this.webSocket.close();
+        this.webSocket = null;
+      }
+      // Direct or proxy mode
+      else if (this.abortController) {
+        this.abortController.abort();
+        this.abortController = null;
+        this.reader = null;
+      }
+      
+      this.handleDisconnect({ reason: 'User disconnected' });
+    } catch (error) {
+      console.error('Error during disconnect:', error);
+      this.isConnected = false;
+      this.isConnecting = false;
+    }
+  }
+
+  /**
+   * Handle disconnection (either manual or due to error)
+   * @param {Object} event - Disconnection event info
+   */
+  handleDisconnect(event) {
+    const wasConnected = this.isConnected;
+    this.isConnected = false;
+    this.isConnecting = false;
+    
+    // Reset connection resources
+    this.webSocket = null;
+    this.reader = null;
+    this.abortController = null;
+    
+    // Stop GGA updates
+    this.stopGgaUpdates();
+    
+    if (wasConnected) {
+      this.eventEmitter.emit('ntrip:disconnected', {
+        reason: event.reason || 'Unknown reason'
+      });
+    }
+    
+    // Attempt reconnection if enabled
+    if (this.autoReconnect &amp;&amp; this.reconnectAttempts &lt; this.maxReconnectAttempts) {
+      this.scheduleReconnect();
+    }
+  }
+
+  /**
+   * Schedule a reconnection attempt
+   */
+  scheduleReconnect() {
+    // Exponential backoff with jitter
+    const delay = Math.min(30000, this.reconnectDelay * Math.pow(1.5, this.reconnectAttempts)) 
+      * (0.9 + Math.random() * 0.2); // Add 10% jitter
+      
+    console.log(`Scheduling reconnection attempt in ${Math.round(delay / 1000)} seconds`);
+    
+    setTimeout(() => {
+      if (!this.isConnected &amp;&amp; !this.isConnecting) {
+        console.log(`Attempting to reconnect (attempt ${this.reconnectAttempts + 1}/${this.maxReconnectAttempts})`);
+        this.reconnectAttempts++;
+        this.connect(this.config);
+      }
+    }, delay);
+  }
+
+  /**
+   * Process the queue of RTCM messages
+   */
+  async processRtcmQueue() {
+    while (this.rtcmQueue.length > 0) {
+      try {
+        const rtcmData = this.rtcmQueue[0];
+        
+        // Send to device
+        if (this.deviceManager.isDeviceConnected()) {
+          const result = await this.deviceManager.sendData(rtcmData);
+          
+          if (result) {
+            this.rtcmStats.bytesSent += rtcmData.byteLength;
+          } else {
+            console.warn('Failed to send RTCM to device');
+          }
+        }
+        
+        // Remove from queue regardless of success
+        // This prevents getting stuck on a problematic message
+        this.rtcmQueue.shift();
+        
+        // Small delay between messages to avoid overwhelming the device
+        await new Promise(resolve => setTimeout(resolve, 50));
+      } catch (error) {
+        console.error('Error processing RTCM queue:', error);
+        
+        // Remove problematic message from queue
+        this.rtcmQueue.shift();
+        
+        // Longer delay after error
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+    }
+  }
+
+  /**
+   * Start periodically sending GGA updates to the NTRIP caster
+   */
+  startGgaUpdates() {
+    // Stop existing interval if any
+    this.stopGgaUpdates();
+    
+    // Send initial update immediately - this is critical for NTRIP casters
+    // that require GGA before sending RTCM data
+    let initialGgaSent = false;
+    
+    if (this.isConnected) {
+      if (this.lastGga) {
+        initialGgaSent = this.sendGGA(this.lastGga);
+      } else if (this.lastPosition) {
+        const gga = this.createGgaSentence(this.lastPosition);
+        initialGgaSent = this.sendGGA(gga);
+      } else {
+        // If we don't have a position, generate a default one
+        // This is necessary because many casters require a GGA
+        // to start streaming data, even if it's not accurate
+        try {
+          // Create a default position close to the equator (to be in range of most casters)
+          const defaultPosition = {
+            latitude: 0.1,
+            longitude: 0.1,
+            quality: 1,
+            satellites: 8,
+            hdop: 1.0
+          };
+          
+          const gga = this.createGgaSentence(defaultPosition);
+          initialGgaSent = this.sendGGA(gga);
+          
+          // Log that we're using a fallback position
+          console.warn('No position available, sending default GGA position to NTRIP caster');
+          this.eventEmitter.emit('ntrip:info', { 
+            message: 'Using default position for NTRIP. Corrections may not be optimal.'
+          });
+        } catch (error) {
+          console.error('Failed to send default GGA position:', error);
+        }
+      }
+    }
+    
+    // Start regular interval for updates
+    this.ggaInterval = setInterval(() => {
+      if (this.isConnected) {
+        if (this.lastGga) {
+          this.sendGGA(this.lastGga);
+        } else if (this.lastPosition) {
+          const gga = this.createGgaSentence(this.lastPosition);
+          this.sendGGA(gga);
+        }
+      }
+    }, this.config.ggaUpdateInterval * 1000);
+    
+    // If we didn't send the initial GGA and the caster might be waiting,
+    // try sending GGA messages with progressively shorter intervals initially
+    if (this.isConnected &amp;&amp; !initialGgaSent) {
+      // Try again after 1 second
+      setTimeout(() => {
+        if (this.isConnected &amp;&amp; (this.lastGga || this.lastPosition)) {
+          const gga = this.lastGga || this.createGgaSentence(this.lastPosition);
+          this.sendGGA(gga);
+        }
+      }, 1000);
+      
+      // And again after 3 seconds
+      setTimeout(() => {
+        if (this.isConnected &amp;&amp; (this.lastGga || this.lastPosition)) {
+          const gga = this.lastGga || this.createGgaSentence(this.lastPosition);
+          this.sendGGA(gga);
+        }
+      }, 3000);
+    }
+  }
+
+  /**
+   * Stop sending GGA updates
+   */
+  stopGgaUpdates() {
+    if (this.ggaInterval) {
+      clearInterval(this.ggaInterval);
+      this.ggaInterval = null;
+    }
+  }
+
+  /**
+   * Set the GGA update interval
+   * @param {number} seconds - Update interval in seconds
+   */
+  setGgaUpdateInterval(seconds) {
+    // Validate input
+    const interval = parseInt(seconds);
+    if (isNaN(interval) || interval &lt;= 0) {
+      console.warn('Invalid GGA update interval, using default:', this.config.ggaUpdateInterval);
+      return;
+    }
+    
+    // Update config
+    this.config.ggaUpdateInterval = interval;
+    console.log(`NTRIP GGA update interval set to ${interval} seconds`);
+    
+    // Restart interval if already running
+    if (this.ggaInterval) {
+      this.startGgaUpdates(); // This will stop and restart with new interval
+    }
+  }
+
+  /**
+   * Update the device with the latest position
+   * @param {Object} position - Position data
+   */
+  updatePosition(position) {
+    this.lastPosition = position;
+    
+    // If GGA updates are enabled and we're connected, create and send GGA
+    if (this.config.sendGga &amp;&amp; this.isConnected &amp;&amp; !this.lastGga) {
+      const gga = this.createGgaSentence(position);
+      this.sendGGA(gga);
+    }
+  }
+
+  /**
+   * Send NMEA GGA sentence to NTRIP caster
+   * @param {string} gga - NMEA GGA sentence
+   * @returns {Promise&lt;boolean>} Whether message was sent successfully
+   */
+  async sendGGA(gga) {
+    if (!this.isConnected) {
+      return false;
+    }
+    
+    try {
+      // Store the GGA for periodic updates
+      this.lastGga = gga;
+      
+      // Choose method based on active mode
+      if (this.activeMode === 'websocket') {
+        return this.sendGGAWebSocket(gga);
+      } else if (this.activeMode === 'direct') {
+        return this.sendGGADirect(gga);
+      } else if (this.activeMode === 'proxy') {
+        return this.sendGGAProxy(gga);
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Error sending GGA:', error);
+      return false;
+    }
+  }
+  
+  /**
+   * Send GGA via WebSocket
+   * @param {string} gga - NMEA GGA sentence
+   * @returns {Promise&lt;boolean>} Whether message was sent successfully
+   */
+  async sendGGAWebSocket(gga) {
+    if (!this.webSocket || this.webSocket.readyState !== WebSocket.OPEN) {
+      return false;
+    }
+    
+    try {
+      this.webSocket.send(JSON.stringify({
+        command: 'gga',
+        data: gga
+      }));
+      
+      return true;
+    } catch (error) {
+      console.error('Error sending GGA via WebSocket:', error);
+      return false;
+    }
+  }
+  
+  /**
+   * Send GGA directly to NTRIP caster
+   * @param {string} gga - NMEA GGA sentence
+   * @returns {Promise&lt;boolean>} Whether message was sent successfully
+   */
+  async sendGGADirect(gga) {
+    try {
+      // Create POST request URL
+      const protocol = this.config.casterPort === 443 ? 'https' : 'http';
+      const url = `${protocol}://${this.config.casterHost}:${this.config.casterPort}/${this.config.mountpoint}`;
+      
+      // Create headers with authentication if needed
+      const headers = new Headers({
+        'Content-Type': 'text/plain',
+        'User-Agent': 'NTRIP WebGNSS Client'
+      });
+      
+      if (this.config.username &amp;&amp; this.config.password) {
+        const auth = btoa(`${this.config.username}:${this.config.password}`);
+        headers.append('Authorization', `Basic ${auth}`);
+      }
+      
+      // Send request - don't await the response as it's fire-and-forget
+      fetch(url, {
+        method: 'POST',
+        headers,
+        body: gga
+      }).catch(error => {
+        console.warn('Error sending GGA directly:', error);
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error sending GGA directly:', error);
+      return false;
+    }
+  }
+  
+  /**
+   * Send GGA via proxy
+   * @param {string} gga - NMEA GGA sentence
+   * @returns {Promise&lt;boolean>} Whether message was sent successfully
+   */
+  async sendGGAProxy(gga) {
+    try {
+      // Determine proxy URL
+      let proxyUrl = this.config.proxyUrl;
+      
+      // If it's a relative URL, make it absolute
+      if (proxyUrl.startsWith('/')) {
+        const protocol = window.location.protocol;
+        proxyUrl = `${protocol}//${window.location.host}${proxyUrl}`;
+      }
+      
+      // Add GGA endpoint
+      proxyUrl = `${proxyUrl}/${this.config.mountpoint}/gga`;
+      
+      // Add parameters
+      const params = new URLSearchParams({
+        host: this.config.casterHost,
+        port: this.config.casterPort.toString()
+      });
+      
+      if (this.config.username &amp;&amp; this.config.password) {
+        params.append('user', this.config.username);
+        params.append('password', this.config.password);
+      }
+      
+      proxyUrl += `?${params.toString()}`;
+      
+      // Send request - don't await the response as it's fire-and-forget
+      fetch(proxyUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain'
+        },
+        body: gga
+      }).catch(error => {
+        console.warn('Error sending GGA via proxy:', error);
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error sending GGA via proxy:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Create NMEA GGA sentence from position data
+   * @param {Object} position - Position data
+   * @returns {string} GGA sentence
+   */
+  createGgaSentence(position) {
+    try {
+      // Validate position
+      if (!position || typeof position.latitude !== 'number' || typeof position.longitude !== 'number') {
+        throw new Error('Invalid position data');
+      }
+      
+      // Get time in UTC
+      const now = new Date();
+      const hours = now.getUTCHours().toString().padStart(2, '0');
+      const minutes = now.getUTCMinutes().toString().padStart(2, '0');
+      const seconds = now.getUTCSeconds().toString().padStart(2, '0');
+      const milliseconds = now.getUTCMilliseconds().toString().padStart(3, '0');
+      const timeStr = `${hours}${minutes}${seconds}.${milliseconds}`;
+      
+      // Format latitude - IMPORTANT: This must follow NMEA spec exactly
+      // Format: DDMM.MMMMM (degrees and decimal minutes)
+      const latDeg = Math.floor(Math.abs(position.latitude));
+      const latMin = (Math.abs(position.latitude) - latDeg) * 60;
+      const latStr = `${latDeg.toString().padStart(2, '0')}${latMin.toFixed(7)}`;
+      const latDir = position.latitude >= 0 ? 'N' : 'S';
+      
+      // Format longitude - IMPORTANT: This must follow NMEA spec exactly
+      // Format: DDDMM.MMMMM (degrees and decimal minutes)
+      const lonDeg = Math.floor(Math.abs(position.longitude));
+      const lonMin = (Math.abs(position.longitude) - lonDeg) * 60;
+      const lonStr = `${lonDeg.toString().padStart(3, '0')}${lonMin.toFixed(7)}`;
+      const lonDir = position.longitude >= 0 ? 'E' : 'W';
+      
+      // Quality indicator
+      // 0 = No fix, 1 = GPS fix, 2 = DGPS, 4 = RTK fixed, 5 = RTK float
+      const quality = position.quality || 1;
+      
+      // Number of satellites
+      const satellites = position.satellites || 8; // Default to 8 satellites to indicate strong signal
+      
+      // HDOP
+      const hdop = position.hdop || 1.0;
+      
+      // Altitude
+      const altitude = position.altitude || 0.0;
+      
+      // Geoid separation (set to 0 if not available)
+      const geoidSep = position.geoidSeparation || 0.0;
+      
+      // Age of differential corrections (set to empty if not available)
+      const diffAge = position.diffAge || '';
+      
+      // Differential reference station ID (empty if not available)
+      const diffStationId = position.diffStationId || '';
+      
+      // Construct GGA sentence
+      const ggaFields = [
+        'GPGGA',         // Message ID
+        timeStr,         // UTC Time
+        latStr,          // Latitude
+        latDir,          // N/S indicator
+        lonStr,          // Longitude
+        lonDir,          // E/W indicator
+        quality,         // Quality indicator
+        satellites,      // Number of satellites
+        hdop.toFixed(1), // HDOP
+        altitude.toFixed(1), // Altitude
+        'M',             // Altitude units (meters)
+        geoidSep.toFixed(1), // Geoid separation
+        'M',             // Geoid separation units (meters)
+        diffAge,         // Age of differential corrections
+        diffStationId    // Differential reference station ID
+      ];
+      
+      // Join fields with commas
+      const sentence = '$' + ggaFields.join(',');
+      
+      // Calculate checksum
+      let checksum = 0;
+      for (let i = 1; i &lt; sentence.length; i++) {
+        checksum ^= sentence.charCodeAt(i);
+      }
+      
+      // Format checksum as 2-digit hex
+      const checksumHex = checksum.toString(16).toUpperCase().padStart(2, '0');
+      
+      // Add checksum and line ending
+      const fullSentence = `${sentence}*${checksumHex}\r\n`;
+      
+      // Validate the created sentence
+      if (this.isValidGga(fullSentence)) {
+        return fullSentence;
+      } else {
+        throw new Error('Generated GGA sentence failed validation');
+      }
+    } catch (error) {
+      console.error('Error creating GGA sentence:', error);
+      
+      // Return a minimal valid GGA sentence with 0,0 coordinates
+      // This is a fallback that uses a pre-computed valid GGA with checksum
+      return '$GPGGA,000000.000,0000.0000,N,00000.0000,E,1,08,1.0,0.0,M,0.0,M,,*67\r\n';
+    }
+  }
+  
+  /**
+   * Validate if a GGA sentence is properly formatted
+   * @param {string} sentence - GGA sentence to validate
+   * @returns {boolean} Whether the sentence is valid
+   */
+  isValidGga(sentence) {
+    // Basic format check
+    if (!sentence || typeof sentence !== 'string') {
+      return false;
+    }
+    
+    // Must start with $GPGGA or $GNGGA
+    if (!sentence.startsWith('$GPGGA') &amp;&amp; !sentence.startsWith('$GNGGA')) {
+      return false;
+    }
+    
+    // Must have enough fields (minimum 14 comma-separated values)
+    const parts = sentence.split(',');
+    if (parts.length &lt; 14) {
+      return false;
+    }
+    
+    // Must have lat/long data
+    if (!parts[2] || !parts[4]) {
+      return false;
+    }
+    
+    // Verify checksum if present
+    if (sentence.includes('*')) {
+      try {
+        const checksumIndex = sentence.indexOf('*');
+        const providedChecksum = parseInt(sentence.substring(checksumIndex + 1), 16);
+        
+        // Calculate checksum
+        let calculatedChecksum = 0;
+        for (let i = 1; i &lt; checksumIndex; i++) {
+          calculatedChecksum ^= sentence.charCodeAt(i);
+        }
+        
+        if (providedChecksum !== calculatedChecksum) {
+          console.error(`GGA checksum mismatch: provided ${providedChecksum}, calculated ${calculatedChecksum}`);
+          return false;
+        }
+      } catch (e) {
+        console.error('Error validating GGA checksum:', e);
+        return false;
+      }
+    }
+    
+    return true;
+  }
+
+  /**
+   * Update correction age based on last message time
+   */
+  updateCorrectionAge() {
+    if (this.rtcmStats.lastMessageTime) {
+      const now = new Date();
+      this.rtcmStats.correctionAge = (now - this.rtcmStats.lastMessageTime) / 1000;
+    }
+  }
+
+  /**
+   * Get RTCM statistics
+   * @returns {Object} RTCM statistics
+   */
+  getRtcmStats() {
+    // Update correction age
+    this.updateCorrectionAge();
+    
+    return {
+      ...this.rtcmStats,
+      connected: this.isConnected,
+      mode: this.activeMode,
+      reconnectAttempts: this.reconnectAttempts
+    };
+  }
+
+  /**
+   * Reset RTCM statistics
+   */
+  resetRtcmStats() {
+    this.rtcmStats = {
+      messagesReceived: 0,
+      bytesSent: 0,
+      bytesReceived: 0,
+      lastMessageTime: null,
+      correctionAge: null
+    };
+  }
+
+  /**
+   * Enable/disable auto-reconnect
+   * @param {boolean} enabled - Whether auto-reconnect is enabled
+   * @param {number} maxAttempts - Maximum reconnection attempts
+   */
+  setAutoReconnect(enabled, maxAttempts = 5) {
+    this.autoReconnect = enabled;
+    this.maxReconnectAttempts = maxAttempts;
+  }
+  
+  /**
+   * Get connection status information
+   * @returns {Object} Connection status
+   */
+  getConnectionInfo() {
+    this.updateCorrectionAge();
+    
+    return {
+      connected: this.isConnected,
+      connecting: this.isConnecting,
+      casterHost: this.config.casterHost,
+      mountpoint: this.config.mountpoint,
+      mode: this.activeMode,
+      rtcmStats: { ...this.rtcmStats },
+      reconnectAttempts: this.reconnectAttempts,
+      autoReconnect: this.autoReconnect
+    };
+  }
+}
+
+export default NtripClient;</code></pre></article></section></div></div></div><div class="search-container" id="PkfLWpAbet" style="display:none"><div class="wrapper" id="iCxFxjkHbP"><button class="icon-button search-close-button" id="VjLlGakifb" aria-label="close search"><svg><use xlink:href="#close-icon"></use></svg></button><div class="search-box-c"><svg><use xlink:href="#search-icon"></use></svg> <input type="text" id="vpcKVYIppa" class="search-input" placeholder="Search..." autofocus></div><div class="search-result-c" id="fWwVHRuDuN"><span class="search-result-c-text">Type anything to view search result</span></div></div></div><div class="mobile-menu-icon-container"><button class="icon-button" id="mobile-menu" data-isopen="false" aria-label="menu"><svg><use xlink:href="#menu-icon"></use></svg></button></div><div id="mobile-sidebar" class="mobile-sidebar-container"><div class="mobile-sidebar-wrapper"><div class="mobile-nav-links"></div><div class="mobile-sidebar-items-c"><div class="sidebar-section-title with-arrow" data-isopen="false" id="sidebar-classes"><div>Classes</div><svg><use xlink:href="#down-icon"></use></svg></div><div class="sidebar-section-children-container"><div class="sidebar-section-children"><a href="BluetoothConnection.html">BluetoothConnection</a></div><div class="sidebar-section-children"><a href="ConnectionHandler.html">ConnectionHandler</a></div><div class="sidebar-section-children"><a href="ConnectionManager.html">ConnectionManager</a></div><div class="sidebar-section-children"><a href="DeviceSettings.html">DeviceSettings</a></div><div class="sidebar-section-children"><a href="EventEmitter.html">EventEmitter</a></div><div class="sidebar-section-children"><a href="GnssModule.html">GnssModule</a></div><div class="sidebar-section-children"><a href="NmeaParser.html">NmeaParser</a></div><div class="sidebar-section-children"><a href="NtripClient.html">NtripClient</a></div><div class="sidebar-section-children"><a href="RtkSettings.html">RtkSettings</a></div><div class="sidebar-section-children"><a href="RtkStatus.html">RtkStatus</a></div><div class="sidebar-section-children"><a href="Settings.html">Settings</a></div><div class="sidebar-section-children"><a href="SettingsPage.html">SettingsPage</a></div></div></div><div class="mobile-navbar-actions"><div class="navbar-right-item"><button class="icon-button search-button" aria-label="open-search"><svg><use xlink:href="#search-icon"></use></svg></button></div><div class="navbar-right-item"><button class="icon-button theme-toggle" aria-label="toggle-theme"><svg><use class="theme-svg-use" xlink:href="#light-theme-icon"></use></svg></button></div><div class="navbar-right-item"><button class="icon-button font-size" aria-label="change-font-size"><svg><use xlink:href="#font-size-icon"></use></svg></button></div></div></div></div><script type="text/javascript" src="scripts/core.min.js"></script><script src="scripts/search.min.js" defer="defer"></script><script src="scripts/third-party/fuse.js" defer="defer"></script><script type="text/javascript">var tocbotInstance=tocbot.init({tocSelector:"#eed4d2a0bfd64539bb9df78095dec881",contentSelector:".main-content",headingSelector:"h1, h2, h3",hasInnerContainers:!0,scrollContainer:".main-content",headingsOffset:130,onClick:bringLinkToView})</script></body></html>

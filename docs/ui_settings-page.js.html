@@ -1,0 +1,923 @@
+<!DOCTYPE html><html lang="en" style="font-size:16px"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Source: ui/settings-page.js</title><!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]--><script src="scripts/third-party/hljs.js" defer="defer"></script><script src="scripts/third-party/hljs-line-num.js" defer="defer"></script><script src="scripts/third-party/popper.js" defer="defer"></script><script src="scripts/third-party/tippy.js" defer="defer"></script><script src="scripts/third-party/tocbot.min.js"></script><script>var baseURL="/",locationPathname="";baseURL=(locationPathname=document.location.pathname).substr(0,locationPathname.lastIndexOf("/")+1)</script><link rel="stylesheet" href="styles/clean-jsdoc-theme.min.css"><svg aria-hidden="true" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="display:none"><defs><symbol id="copy-icon" viewbox="0 0 488.3 488.3"><g><path d="M314.25,85.4h-227c-21.3,0-38.6,17.3-38.6,38.6v325.7c0,21.3,17.3,38.6,38.6,38.6h227c21.3,0,38.6-17.3,38.6-38.6V124    C352.75,102.7,335.45,85.4,314.25,85.4z M325.75,449.6c0,6.4-5.2,11.6-11.6,11.6h-227c-6.4,0-11.6-5.2-11.6-11.6V124    c0-6.4,5.2-11.6,11.6-11.6h227c6.4,0,11.6,5.2,11.6,11.6V449.6z"/><path d="M401.05,0h-227c-21.3,0-38.6,17.3-38.6,38.6c0,7.5,6,13.5,13.5,13.5s13.5-6,13.5-13.5c0-6.4,5.2-11.6,11.6-11.6h227    c6.4,0,11.6,5.2,11.6,11.6v325.7c0,6.4-5.2,11.6-11.6,11.6c-7.5,0-13.5,6-13.5,13.5s6,13.5,13.5,13.5c21.3,0,38.6-17.3,38.6-38.6    V38.6C439.65,17.3,422.35,0,401.05,0z"/></g></symbol><symbol id="search-icon" viewBox="0 0 512 512"><g><g><path d="M225.474,0C101.151,0,0,101.151,0,225.474c0,124.33,101.151,225.474,225.474,225.474    c124.33,0,225.474-101.144,225.474-225.474C450.948,101.151,349.804,0,225.474,0z M225.474,409.323    c-101.373,0-183.848-82.475-183.848-183.848S124.101,41.626,225.474,41.626s183.848,82.475,183.848,183.848    S326.847,409.323,225.474,409.323z"/></g></g><g><g><path d="M505.902,476.472L386.574,357.144c-8.131-8.131-21.299-8.131-29.43,0c-8.131,8.124-8.131,21.306,0,29.43l119.328,119.328    c4.065,4.065,9.387,6.098,14.715,6.098c5.321,0,10.649-2.033,14.715-6.098C514.033,497.778,514.033,484.596,505.902,476.472z"/></g></g></symbol><symbol id="font-size-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M11.246 15H4.754l-2 5H.6L7 4h2l6.4 16h-2.154l-2-5zm-.8-2L8 6.885 5.554 13h4.892zM21 12.535V12h2v8h-2v-.535a4 4 0 1 1 0-6.93zM19 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></symbol><symbol id="add-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2z"/></symbol><symbol id="minus-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M5 11h14v2H5z"/></symbol><symbol id="dark-theme-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M10 7a7 7 0 0 0 12 4.9v.1c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2h.1A6.979 6.979 0 0 0 10 7zm-6 5a8 8 0 0 0 15.062 3.762A9 9 0 0 1 8.238 4.938 7.999 7.999 0 0 0 4 12z"/></symbol><symbol id="light-theme-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12zm0-2a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM11 1h2v3h-2V1zm0 19h2v3h-2v-3zM3.515 4.929l1.414-1.414L7.05 5.636 5.636 7.05 3.515 4.93zM16.95 18.364l1.414-1.414 2.121 2.121-1.414 1.414-2.121-2.121zm2.121-14.85l1.414 1.415-2.121 2.121-1.414-1.414 2.121-2.121zM5.636 16.95l1.414 1.414-2.121 2.121-1.414-1.414 2.121-2.121zM23 11v2h-3v-2h3zM4 11v2H1v-2h3z"/></symbol><symbol id="reset-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M18.537 19.567A9.961 9.961 0 0 1 12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10c0 2.136-.67 4.116-1.81 5.74L17 12h3a8 8 0 1 0-2.46 5.772l.997 1.795z"/></symbol><symbol id="down-icon" viewBox="0 0 16 16"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.7803 6.21967C13.0732 6.51256 13.0732 6.98744 12.7803 7.28033L8.53033 11.5303C8.23744 11.8232 7.76256 11.8232 7.46967 11.5303L3.21967 7.28033C2.92678 6.98744 2.92678 6.51256 3.21967 6.21967C3.51256 5.92678 3.98744 5.92678 4.28033 6.21967L8 9.93934L11.7197 6.21967C12.0126 5.92678 12.4874 5.92678 12.7803 6.21967Z"></path></symbol><symbol id="codepen-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M16.5 13.202L13 15.535v3.596L19.197 15 16.5 13.202zM14.697 12L12 10.202 9.303 12 12 13.798 14.697 12zM20 10.869L18.303 12 20 13.131V10.87zM19.197 9L13 4.869v3.596l3.5 2.333L19.197 9zM7.5 10.798L11 8.465V4.869L4.803 9 7.5 10.798zM4.803 15L11 19.131v-3.596l-3.5-2.333L4.803 15zM4 13.131L5.697 12 4 10.869v2.262zM2 9a1 1 0 0 1 .445-.832l9-6a1 1 0 0 1 1.11 0l9 6A1 1 0 0 1 22 9v6a1 1 0 0 1-.445.832l-9 6a1 1 0 0 1-1.11 0l-9-6A1 1 0 0 1 2 15V9z"/></symbol><symbol id="close-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 10.586l4.95-4.95 1.414 1.414-4.95 4.95 4.95 4.95-1.414 1.414-4.95-4.95-4.95 4.95-1.414-1.414 4.95-4.95-4.95-4.95L7.05 5.636z"/></symbol><symbol id="menu-icon" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z"/></symbol></defs></svg></head><body data-theme="dark"><div class="sidebar-container"><div class="sidebar" id="sidebar"><div class="sidebar-items-container"><div class="sidebar-section-title with-arrow" data-isopen="false" id="sidebar-classes"><div>Classes</div><svg><use xlink:href="#down-icon"></use></svg></div><div class="sidebar-section-children-container"><div class="sidebar-section-children"><a href="BluetoothConnection.html">BluetoothConnection</a></div><div class="sidebar-section-children"><a href="ConnectionHandler.html">ConnectionHandler</a></div><div class="sidebar-section-children"><a href="ConnectionManager.html">ConnectionManager</a></div><div class="sidebar-section-children"><a href="DeviceSettings.html">DeviceSettings</a></div><div class="sidebar-section-children"><a href="EventEmitter.html">EventEmitter</a></div><div class="sidebar-section-children"><a href="GnssModule.html">GnssModule</a></div><div class="sidebar-section-children"><a href="NmeaParser.html">NmeaParser</a></div><div class="sidebar-section-children"><a href="NtripClient.html">NtripClient</a></div><div class="sidebar-section-children"><a href="RtkSettings.html">RtkSettings</a></div><div class="sidebar-section-children"><a href="RtkStatus.html">RtkStatus</a></div><div class="sidebar-section-children"><a href="Settings.html">Settings</a></div><div class="sidebar-section-children"><a href="SettingsPage.html">SettingsPage</a></div></div></div></div></div><div class="navbar-container" id="VuAckcnZhf"><nav class="navbar"><div class="navbar-left-items"></div><div class="navbar-right-items"><div class="navbar-right-item"><button class="icon-button search-button" aria-label="open-search"><svg><use xlink:href="#search-icon"></use></svg></button></div><div class="navbar-right-item"><button class="icon-button theme-toggle" aria-label="toggle-theme"><svg><use class="theme-svg-use" xlink:href="#light-theme-icon"></use></svg></button></div><div class="navbar-right-item"><button class="icon-button font-size" aria-label="change-font-size"><svg><use xlink:href="#font-size-icon"></use></svg></button></div></div><nav></nav></nav></div><div class="toc-container"><div class="toc-content"><span class="bold">On this page</span><div id="eed4d2a0bfd64539bb9df78095dec881"></div></div></div><div class="body-wrapper"><div class="main-content"><div class="main-wrapper"><section id="source-page" class="source-page"><header><h1 id="title" class="has-anchor">ui_settings-page.js</h1></header><article><pre class="prettyprint source lang-js"><code>/**
+ * SettingsPage - UI component for configuring GNSS module settings
+ */
+class SettingsPage {
+  constructor(gnssModule, containerId) {
+    this.gnssModule = gnssModule;
+    this.containerId = containerId;
+    this.container = null;
+    this.activeTab = 'bluetooth';
+    
+    // Initialize after DOM is loaded
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => this.init());
+    } else {
+      this.init();
+    }
+  }
+
+  /**
+   * Initialize the settings page
+   */
+  init() {
+    this.container = document.getElementById(this.containerId);
+    
+    if (!this.container) {
+      console.error(`Container with ID '${this.containerId}' not found`);
+      return;
+    }
+    
+    this.render();
+    this.attachEventListeners();
+  }
+
+  /**
+   * Render the settings page
+   */
+  render() {
+    this.container.innerHTML = `
+      &lt;div class="gnss-settings">
+        &lt;div class="gnss-settings-tabs">
+          &lt;button class="tab-button active" data-tab="bluetooth">Bluetooth&lt;/button>
+          &lt;button class="tab-button" data-tab="ntrip">NTRIP&lt;/button>
+          &lt;button class="tab-button" data-tab="rover">Rover&lt;/button>
+          &lt;button class="tab-button" data-tab="advanced">Advanced&lt;/button>
+        &lt;/div>
+        
+        &lt;div class="gnss-settings-content">
+          &lt;!-- Bluetooth Settings -->
+          &lt;div class="tab-content active" data-tab="bluetooth">
+            &lt;h3>Device Connection&lt;/h3>
+            
+            &lt;div class="form-group">
+              &lt;label for="connection-method">Connection Method&lt;/label>
+              &lt;select id="connection-method" class="form-control">
+                &lt;option value="auto">Auto-detect (recommended)&lt;/option>
+                &lt;option value="bluetooth">Web Bluetooth&lt;/option>
+                &lt;option value="serial">Web Serial&lt;/option>
+              &lt;/select>
+            &lt;/div>
+            
+            &lt;div id="bluetooth-settings" class="method-settings">
+              &lt;h4>Bluetooth Settings&lt;/h4>
+              &lt;div class="form-group">
+                &lt;button id="bt-connect" class="btn btn-primary">Connect via Bluetooth&lt;/button>
+              &lt;/div>
+            &lt;/div>
+            
+            &lt;div id="serial-settings" class="method-settings" style="display: none;">
+              &lt;h4>Serial Settings&lt;/h4>
+              &lt;div class="form-group">
+                &lt;label for="serial-baud">Baud Rate&lt;/label>
+                &lt;select id="serial-baud" class="form-control">
+                  &lt;option value="9600">9600&lt;/option>
+                  &lt;option value="19200">19200&lt;/option>
+                  &lt;option value="38400">38400&lt;/option>
+                  &lt;option value="57600">57600&lt;/option>
+                  &lt;option value="115200">115200&lt;/option>
+                &lt;/select>
+              &lt;/div>
+              &lt;div class="form-group">
+                &lt;button id="serial-connect" class="btn btn-primary">Connect via Serial&lt;/button>
+              &lt;/div>
+            &lt;/div>
+            
+            &lt;div class="form-group">
+              &lt;button id="device-disconnect" class="btn btn-danger" disabled>Disconnect&lt;/button>
+            &lt;/div>
+            
+            &lt;div class="form-group">
+              &lt;label>
+                &lt;input type="checkbox" id="device-auto-connect">
+                Auto-connect on startup
+              &lt;/label>
+            &lt;/div>
+            
+            &lt;div class="connection-status">
+              &lt;p>Status: &lt;span id="connection-status">Disconnected&lt;/span>&lt;/p>
+              &lt;p>Method: &lt;span id="connection-method-display">None&lt;/span>&lt;/p>
+              &lt;p>Device: &lt;span id="connection-device">None&lt;/span>&lt;/p>
+            &lt;/div>
+          &lt;/div>
+          
+          &lt;!-- NTRIP Settings -->
+          &lt;div class="tab-content" data-tab="ntrip">
+            &lt;h3>NTRIP Configuration&lt;/h3>
+            
+            &lt;div class="form-group">
+              &lt;label for="ntrip-host">Host&lt;/label>
+              &lt;input type="text" id="ntrip-host" class="form-control" placeholder="caster.example.com">
+            &lt;/div>
+            &lt;div class="form-group">
+              &lt;label for="ntrip-port">Port&lt;/label>
+              &lt;input type="number" id="ntrip-port" class="form-control" value="2101">
+            &lt;/div>
+            &lt;div class="form-group">
+              &lt;label for="ntrip-mountpoint">Mountpoint&lt;/label>
+              &lt;input type="text" id="ntrip-mountpoint" class="form-control" placeholder="MOUNT1">
+            &lt;/div>
+            &lt;div class="form-group">
+              &lt;label for="ntrip-username">Username&lt;/label>
+              &lt;input type="text" id="ntrip-username" class="form-control">
+            &lt;/div>
+            &lt;div class="form-group">
+              &lt;label for="ntrip-password">Password&lt;/label>
+              &lt;input type="password" id="ntrip-password" class="form-control">
+            &lt;/div>
+            
+            &lt;h4>Proxy Settings&lt;/h4>
+            &lt;div class="form-group">
+              &lt;label>
+                &lt;input type="checkbox" id="ntrip-use-proxy">
+                Use Proxy Server
+              &lt;/label>
+              &lt;p class="help-text">Enable if you're experiencing CORS issues connecting to the NTRIP caster&lt;/p>
+            &lt;/div>
+            &lt;div class="form-group">
+              &lt;label>
+                &lt;input type="checkbox" id="ntrip-auto-detect-cors" checked>
+                Auto-detect CORS Issues
+              &lt;/label>
+              &lt;p class="help-text">Automatically fall back to proxy if CORS issues are detected&lt;/p>
+            &lt;/div>
+            &lt;div class="form-group">
+              &lt;label for="ntrip-proxy-url">Proxy URL&lt;/label>
+              &lt;input type="text" id="ntrip-proxy-url" class="form-control" placeholder="https://your-proxy-server.com/ntrip">
+              &lt;p class="help-text">URL of a proxy server that handles CORS for NTRIP connections&lt;/p>
+            &lt;/div>
+            
+            &lt;div class="form-group">
+              &lt;button id="ntrip-connect" class="btn btn-primary">Connect&lt;/button>
+              &lt;button id="ntrip-disconnect" class="btn btn-danger" disabled>Disconnect&lt;/button>
+            &lt;/div>
+            &lt;div class="connection-status">
+              &lt;p>Status: &lt;span id="ntrip-status">Disconnected&lt;/span>&lt;/p>
+              &lt;p>Mode: &lt;span id="ntrip-mode">-&lt;/span>&lt;/p>
+            &lt;/div>
+          &lt;/div>
+          
+          &lt;!-- Rover Settings -->
+          &lt;div class="tab-content" data-tab="rover">
+            &lt;h3>Rover Configuration&lt;/h3>
+            &lt;div class="form-group">
+              &lt;label for="rover-dynamic-model">Dynamic Model&lt;/label>
+              &lt;select id="rover-dynamic-model" class="form-control">
+                &lt;option value="portable">Portable&lt;/option>
+                &lt;option value="stationary">Stationary&lt;/option>
+                &lt;option value="pedestrian">Pedestrian&lt;/option>
+                &lt;option value="automotive">Automotive&lt;/option>
+                &lt;option value="sea">Sea&lt;/option>
+                &lt;option value="airborne-1g">Airborne (&amp;lt;1g)&lt;/option>
+                &lt;option value="airborne-2g">Airborne (&amp;lt;2g)&lt;/option>
+                &lt;option value="airborne-4g">Airborne (&amp;lt;4g)&lt;/option>
+                &lt;option value="wrist">Wrist&lt;/option>
+                &lt;option value="bike">Bike&lt;/option>
+              &lt;/select>
+            &lt;/div>
+            &lt;div class="form-group">
+              &lt;label for="rover-message-rate">Message Rate (Hz)&lt;/label>
+              &lt;select id="rover-message-rate" class="form-control">
+                &lt;option value="1">1 Hz&lt;/option>
+                &lt;option value="4">4 Hz&lt;/option>
+                &lt;option value="10">10 Hz&lt;/option>
+                &lt;option value="20">20 Hz&lt;/option>
+              &lt;/select>
+            &lt;/div>
+            &lt;div class="form-group">
+              &lt;button id="rover-apply" class="btn btn-primary">Apply Settings&lt;/button>
+            &lt;/div>
+          &lt;/div>
+          
+          &lt;!-- Advanced Settings -->
+          &lt;div class="tab-content" data-tab="advanced">
+            &lt;h3>Advanced Settings&lt;/h3>
+            &lt;div class="form-group">
+              &lt;label>
+                &lt;input type="checkbox" id="adv-debug-mode">
+                Enable Debug Mode
+              &lt;/label>
+            &lt;/div>
+            &lt;div class="form-group">
+              &lt;label for="adv-coordinate-format">Coordinate Format&lt;/label>
+              &lt;select id="adv-coordinate-format" class="form-control">
+                &lt;option value="dd">Decimal Degrees&lt;/option>
+                &lt;option value="dms">Degrees Minutes Seconds&lt;/option>
+                &lt;option value="utm">UTM&lt;/option>
+              &lt;/select>
+            &lt;/div>
+            &lt;div class="form-group">
+              &lt;label>
+                &lt;input type="checkbox" id="adv-auto-send-gga">
+                Auto-send GGA to NTRIP caster
+              &lt;/label>
+            &lt;/div>
+            &lt;div class="form-group">
+              &lt;label for="adv-gga-interval">GGA Update Interval (seconds)&lt;/label>
+              &lt;select id="adv-gga-interval" class="form-control">
+                &lt;option value="1">1 second&lt;/option>
+                &lt;option value="5">5 seconds&lt;/option>
+                &lt;option value="10">10 seconds&lt;/option>
+                &lt;option value="30">30 seconds&lt;/option>
+                &lt;option value="60">60 seconds&lt;/option>
+              &lt;/select>
+            &lt;/div>
+            &lt;div class="form-group">
+              &lt;button id="adv-reset" class="btn btn-danger">Reset All Settings&lt;/button>
+            &lt;/div>
+          &lt;/div>
+        &lt;/div>
+      &lt;/div>
+    `;
+    
+    // Add basic CSS if not already added
+    if (!document.getElementById('gnss-settings-css')) {
+      const style = document.createElement('style');
+      style.id = 'gnss-settings-css';
+      style.textContent = `
+        .gnss-settings {
+          font-family: sans-serif;
+          max-width: 800px;
+          margin: 0 auto;
+        }
+        
+        .gnss-settings-tabs {
+          display: flex;
+          border-bottom: 1px solid #ccc;
+          margin-bottom: 20px;
+        }
+        
+        .tab-button {
+          padding: 10px 15px;
+          background: none;
+          border: none;
+          cursor: pointer;
+        }
+        
+        .tab-button.active {
+          font-weight: bold;
+          border-bottom: 2px solid #0066cc;
+        }
+        
+        .tab-content {
+          display: none;
+        }
+        
+        .tab-content.active {
+          display: block;
+        }
+        
+        .form-group {
+          margin-bottom: 15px;
+        }
+        
+        .form-group label {
+          display: block;
+          margin-bottom: 5px;
+        }
+        
+        .form-control {
+          width: 100%;
+          padding: 8px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+        }
+        
+        .btn {
+          padding: 8px 15px;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+        }
+        
+        .btn-primary {
+          background-color: #0066cc;
+          color: white;
+        }
+        
+        .btn-danger {
+          background-color: #cc0000;
+          color: white;
+        }
+        
+        .connection-status {
+          margin-top: 20px;
+          padding: 10px;
+          background: #f5f5f5;
+          border-radius: 4px;
+        }
+        
+        .help-text {
+          font-size: 0.8em;
+          color: #666;
+          margin-top: 2px;
+          margin-bottom: 10px;
+        }
+        
+        h4 {
+          margin-top: 20px;
+          margin-bottom: 10px;
+          border-bottom: 1px solid #eee;
+          padding-bottom: 5px;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  }
+
+  /**
+   * Attach event listeners to UI elements
+   */
+  attachEventListeners() {
+    // Tab switching
+    const tabButtons = this.container.querySelectorAll('.tab-button');
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const tab = button.getAttribute('data-tab');
+        this.switchTab(tab);
+      });
+    });
+    
+    // Connection method selection
+    const connectionMethod = this.container.querySelector('#connection-method');
+    const bluetoothSettings = this.container.querySelector('#bluetooth-settings');
+    const serialSettings = this.container.querySelector('#serial-settings');
+    
+    if (connectionMethod) {
+      connectionMethod.addEventListener('change', () => {
+        const method = connectionMethod.value;
+        // Save to settings
+        this.gnssModule.settings.set('connection', 'preferredMethod', method);
+        
+        // Show/hide method-specific settings
+        if (method === 'bluetooth' || method === 'auto') {
+          if (bluetoothSettings) bluetoothSettings.style.display = 'block';
+        } else {
+          if (bluetoothSettings) bluetoothSettings.style.display = 'none';
+        }
+        
+        if (method === 'serial') {
+          if (serialSettings) serialSettings.style.display = 'block';
+        } else {
+          if (serialSettings) serialSettings.style.display = 'none';
+        }
+      });
+    }
+    
+    // Bluetooth connection
+    const btConnect = this.container.querySelector('#bt-connect');
+    if (btConnect) {
+      btConnect.addEventListener('click', () => this.connectBluetooth());
+    }
+    
+    // Serial connection
+    const serialConnect = this.container.querySelector('#serial-connect');
+    const serialBaud = this.container.querySelector('#serial-baud');
+    
+    if (serialConnect) {
+      serialConnect.addEventListener('click', () => this.connectSerial());
+    }
+    
+    if (serialBaud) {
+      serialBaud.addEventListener('change', () => {
+        const baudRate = parseInt(serialBaud.value);
+        this.gnssModule.settings.set('connection', 'serial', {
+          ...this.gnssModule.settings.get('connection', 'serial'),
+          baudRate
+        });
+      });
+    }
+    
+    // Generic device disconnect
+    const deviceDisconnect = this.container.querySelector('#device-disconnect');
+    if (deviceDisconnect) {
+      deviceDisconnect.addEventListener('click', () => this.disconnectDevice());
+    }
+    
+    // Auto-connect setting
+    const deviceAutoConnect = this.container.querySelector('#device-auto-connect');
+    if (deviceAutoConnect) {
+      deviceAutoConnect.addEventListener('change', () => {
+        this.gnssModule.settings.set('connection', 'autoConnect', deviceAutoConnect.checked);
+      });
+    }
+    
+    // NTRIP connection
+    const ntripConnect = this.container.querySelector('#ntrip-connect');
+    const ntripDisconnect = this.container.querySelector('#ntrip-disconnect');
+    const ntripUseProxy = this.container.querySelector('#ntrip-use-proxy');
+    const ntripAutoDetectCors = this.container.querySelector('#ntrip-auto-detect-cors');
+    const ntripProxyUrl = this.container.querySelector('#ntrip-proxy-url');
+    
+    if (ntripConnect) {
+      ntripConnect.addEventListener('click', () => this.connectNtrip());
+    }
+    
+    if (ntripDisconnect) {
+      ntripDisconnect.addEventListener('click', () => this.disconnectNtrip());
+    }
+    
+    // Proxy settings
+    if (ntripUseProxy) {
+      ntripUseProxy.addEventListener('change', () => {
+        this.gnssModule.settings.set('ntrip', 'useProxy', ntripUseProxy.checked);
+      });
+    }
+    
+    if (ntripAutoDetectCors) {
+      ntripAutoDetectCors.addEventListener('change', () => {
+        this.gnssModule.settings.set('ntrip', 'autoDetectCors', ntripAutoDetectCors.checked);
+      });
+    }
+    
+    if (ntripProxyUrl) {
+      ntripProxyUrl.addEventListener('change', () => {
+        this.gnssModule.settings.set('ntrip', 'proxyUrl', ntripProxyUrl.value);
+      });
+      
+      // Also add blur event to save when focus is lost
+      ntripProxyUrl.addEventListener('blur', () => {
+        this.gnssModule.settings.set('ntrip', 'proxyUrl', ntripProxyUrl.value);
+      });
+    }
+    
+    // Rover settings
+    const roverApply = this.container.querySelector('#rover-apply');
+    
+    if (roverApply) {
+      roverApply.addEventListener('click', () => this.applyRoverSettings());
+    }
+    
+    // Advanced settings
+    const advDebugMode = this.container.querySelector('#adv-debug-mode');
+    const advReset = this.container.querySelector('#adv-reset');
+    const advAutoSendGga = this.container.querySelector('#adv-auto-send-gga');
+    const advGgaInterval = this.container.querySelector('#adv-gga-interval');
+    
+    if (advDebugMode) {
+      advDebugMode.addEventListener('change', () => {
+        this.gnssModule.settings.set('ui', 'showDebugInfo', advDebugMode.checked);
+        this.gnssModule.events.setDebug(advDebugMode.checked);
+      });
+    }
+    
+    if (advAutoSendGga) {
+      advAutoSendGga.addEventListener('change', () => {
+        this.gnssModule.settings.set('ntrip', 'autoSendGga', advAutoSendGga.checked);
+      });
+    }
+    
+    if (advGgaInterval) {
+      advGgaInterval.addEventListener('change', () => {
+        const seconds = parseInt(advGgaInterval.value);
+        this.gnssModule.settings.set('ntrip', 'ggaUpdateInterval', seconds);
+        
+        // Update the NTRIP client if it exists
+        if (this.gnssModule.ntripClient) {
+          this.gnssModule.ntripClient.setGgaUpdateInterval(seconds);
+        }
+      });
+    }
+    
+    if (advReset) {
+      advReset.addEventListener('click', () => {
+        if (confirm('Are you sure you want to reset all settings? This cannot be undone.')) {
+          this.gnssModule.settings.reset().then(() => {
+            this.loadSettings();
+          });
+        }
+      });
+    }
+    
+    // Load current settings
+    this.loadSettings();
+    
+    // Set up event listeners for gnssModule events
+    this.setupModuleEventListeners();
+  }
+
+  /**
+   * Switch between settings tabs
+   * @param {string} tab - Tab name
+   */
+  switchTab(tab) {
+    // Update active tab button
+    const tabButtons = this.container.querySelectorAll('.tab-button');
+    tabButtons.forEach(button => {
+      if (button.getAttribute('data-tab') === tab) {
+        button.classList.add('active');
+      } else {
+        button.classList.remove('active');
+      }
+    });
+    
+    // Update active tab content
+    const tabContents = this.container.querySelectorAll('.tab-content');
+    tabContents.forEach(content => {
+      if (content.getAttribute('data-tab') === tab) {
+        content.classList.add('active');
+      } else {
+        content.classList.remove('active');
+      }
+    });
+    
+    this.activeTab = tab;
+  }
+
+  /**
+   * Load current settings into UI
+   */
+  async loadSettings() {
+    // Wait for settings to be loaded
+    await this.gnssModule.settings.loadSettings();
+    
+    // Connection settings
+    const connectionMethod = this.container.querySelector('#connection-method');
+    const bluetoothSettings = this.container.querySelector('#bluetooth-settings');
+    const serialSettings = this.container.querySelector('#serial-settings');
+    const deviceAutoConnect = this.container.querySelector('#device-auto-connect');
+    const serialBaud = this.container.querySelector('#serial-baud');
+    
+    // Set preferred connection method
+    if (connectionMethod) {
+      connectionMethod.value = this.gnssModule.settings.get('connection', 'preferredMethod') || 'auto';
+      
+      // Show/hide method-specific settings based on selected method
+      const method = connectionMethod.value;
+      if (method === 'bluetooth' || method === 'auto') {
+        if (bluetoothSettings) bluetoothSettings.style.display = 'block';
+      } else {
+        if (bluetoothSettings) bluetoothSettings.style.display = 'none';
+      }
+      
+      if (method === 'serial') {
+        if (serialSettings) serialSettings.style.display = 'block';
+      } else {
+        if (serialSettings) serialSettings.style.display = 'none';
+      }
+    }
+    
+    // Set auto-connect setting
+    if (deviceAutoConnect) {
+      deviceAutoConnect.checked = this.gnssModule.settings.get('connection', 'autoConnect') || 
+                                 this.gnssModule.settings.get('bluetooth', 'autoConnect') || 
+                                 false;
+    }
+    
+    // Set serial baud rate
+    if (serialBaud) {
+      const serialSettings = this.gnssModule.settings.get('connection', 'serial') || {};
+      serialBaud.value = serialSettings.baudRate || 9600;
+    }
+    
+    // NTRIP settings
+    const ntripSettings = this.gnssModule.settings.getSection('ntrip');
+    const ntripHost = this.container.querySelector('#ntrip-host');
+    const ntripPort = this.container.querySelector('#ntrip-port');
+    const ntripMountpoint = this.container.querySelector('#ntrip-mountpoint');
+    const ntripUsername = this.container.querySelector('#ntrip-username');
+    const ntripPassword = this.container.querySelector('#ntrip-password');
+    const ntripUseProxy = this.container.querySelector('#ntrip-use-proxy');
+    const ntripAutoDetectCors = this.container.querySelector('#ntrip-auto-detect-cors');
+    const ntripProxyUrl = this.container.querySelector('#ntrip-proxy-url');
+    
+    // Basic settings
+    if (ntripHost) ntripHost.value = ntripSettings.host || '';
+    if (ntripPort) ntripPort.value = ntripSettings.port || 2101;
+    if (ntripMountpoint) ntripMountpoint.value = ntripSettings.mountpoint || '';
+    if (ntripUsername) ntripUsername.value = ntripSettings.username || '';
+    if (ntripPassword) ntripPassword.value = ntripSettings.password || '';
+    
+    // Proxy settings
+    if (ntripUseProxy) ntripUseProxy.checked = ntripSettings.useProxy || false;
+    if (ntripAutoDetectCors) ntripAutoDetectCors.checked = ntripSettings.autoDetectCors !== false; // Default to true
+    if (ntripProxyUrl) ntripProxyUrl.value = ntripSettings.proxyUrl || 'http://localhost:3000';
+    
+    // Rover settings
+    const roverSettings = this.gnssModule.settings.getSection('rover');
+    const roverDynamicModel = this.container.querySelector('#rover-dynamic-model');
+    const roverMessageRate = this.container.querySelector('#rover-message-rate');
+    
+    if (roverDynamicModel) roverDynamicModel.value = roverSettings.dynamicModel || 'pedestrian';
+    if (roverMessageRate) roverMessageRate.value = roverSettings.messageRate || 1;
+    
+    // Advanced settings
+    const uiSettings = this.gnssModule.settings.getSection('ui');
+    // const ntripSettings = this.gnssModule.settings.getSection('ntrip');
+    const advDebugMode = this.container.querySelector('#adv-debug-mode');
+    const advCoordinateFormat = this.container.querySelector('#adv-coordinate-format');
+    const advAutoSendGga = this.container.querySelector('#adv-auto-send-gga');
+    const advGgaInterval = this.container.querySelector('#adv-gga-interval');
+    
+    if (advDebugMode) advDebugMode.checked = uiSettings.showDebugInfo || false;
+    if (advCoordinateFormat) advCoordinateFormat.value = uiSettings.coordinateFormat || 'dd';
+    if (advAutoSendGga) advAutoSendGga.checked = ntripSettings.autoSendGga || false;
+    if (advGgaInterval) advGgaInterval.value = ntripSettings.ggaUpdateInterval || 10;
+  }
+
+  /**
+   * Connect to device via Bluetooth
+   */
+  async connectBluetooth() {
+    const btConnect = this.container.querySelector('#bt-connect');
+    const deviceDisconnect = this.container.querySelector('#device-disconnect');
+    const connectionStatus = this.container.querySelector('#connection-status');
+    const connectionMethodDisplay = this.container.querySelector('#connection-method-display');
+    
+    if (btConnect) btConnect.disabled = true;
+    if (connectionStatus) connectionStatus.textContent = 'Connecting...';
+    if (connectionMethodDisplay) connectionMethodDisplay.textContent = 'Bluetooth';
+    
+    const success = await this.gnssModule.connectDevice({
+      method: 'bluetooth'
+    });
+    
+    if (btConnect) btConnect.disabled = !success;
+    if (deviceDisconnect) deviceDisconnect.disabled = !success;
+  }
+  
+  /**
+   * Connect to device via Serial
+   */
+  async connectSerial() {
+    const serialConnect = this.container.querySelector('#serial-connect');
+    const serialBaud = this.container.querySelector('#serial-baud');
+    const deviceDisconnect = this.container.querySelector('#device-disconnect');
+    const connectionStatus = this.container.querySelector('#connection-status');
+    const connectionMethodDisplay = this.container.querySelector('#connection-method-display');
+    
+    if (serialConnect) serialConnect.disabled = true;
+    if (connectionStatus) connectionStatus.textContent = 'Connecting...';
+    if (connectionMethodDisplay) connectionMethodDisplay.textContent = 'Serial';
+    
+    // Get baud rate
+    const baudRate = serialBaud ? parseInt(serialBaud.value) : 9600;
+    
+    const success = await this.gnssModule.connectDevice({
+      method: 'serial',
+      serial: {
+        baudRate
+      }
+    });
+    
+    if (serialConnect) serialConnect.disabled = !success;
+    if (deviceDisconnect) deviceDisconnect.disabled = !success;
+  }
+
+  /**
+   * Disconnect from device
+   */
+  async disconnectDevice() {
+    const btConnect = this.container.querySelector('#bt-connect');
+    const serialConnect = this.container.querySelector('#serial-connect');
+    const deviceDisconnect = this.container.querySelector('#device-disconnect');
+    
+    if (deviceDisconnect) deviceDisconnect.disabled = true;
+    
+    await this.gnssModule.disconnectDevice();
+    
+    if (btConnect) btConnect.disabled = false;
+    if (serialConnect) serialConnect.disabled = false;
+    if (deviceDisconnect) deviceDisconnect.disabled = true;
+  }
+
+  /**
+   * Connect to NTRIP caster
+   */
+  async connectNtrip() {
+    // Get NTRIP connection settings
+    const ntripHost = this.container.querySelector('#ntrip-host').value;
+    const ntripPort = parseInt(this.container.querySelector('#ntrip-port').value);
+    const ntripMountpoint = this.container.querySelector('#ntrip-mountpoint').value;
+    const ntripUsername = this.container.querySelector('#ntrip-username').value;
+    const ntripPassword = this.container.querySelector('#ntrip-password').value;
+    
+    // Get proxy settings
+    const ntripUseProxy = this.container.querySelector('#ntrip-use-proxy').checked;
+    const ntripAutoDetectCors = this.container.querySelector('#ntrip-auto-detect-cors').checked;
+    const ntripProxyUrl = this.container.querySelector('#ntrip-proxy-url').value;
+    
+    // Get UI elements
+    const ntripConnect = this.container.querySelector('#ntrip-connect');
+    const ntripDisconnect = this.container.querySelector('#ntrip-disconnect');
+    const ntripStatus = this.container.querySelector('#ntrip-status');
+    const ntripMode = this.container.querySelector('#ntrip-mode');
+    
+    // Save all settings
+    await this.gnssModule.settings.update('ntrip', {
+      host: ntripHost,
+      port: ntripPort,
+      mountpoint: ntripMountpoint,
+      username: ntripUsername,
+      password: ntripPassword,
+      useProxy: ntripUseProxy,
+      autoDetectCors: ntripAutoDetectCors,
+      proxyUrl: ntripProxyUrl
+    });
+    
+    // Update UI
+    if (ntripConnect) ntripConnect.disabled = true;
+    if (ntripStatus) ntripStatus.textContent = 'Connecting...';
+    if (ntripMode) ntripMode.textContent = ntripUseProxy ? 'Proxy' : 'Direct (with auto-fallback)';
+    
+    // Attempt connection
+    const success = await this.gnssModule.connectNtrip();
+    
+    // Update UI after connection attempt
+    if (ntripConnect) ntripConnect.disabled = !success;
+    if (ntripDisconnect) ntripDisconnect.disabled = !success;
+    
+    // Mode will be updated by the NTRIP event listeners
+  }
+
+  /**
+   * Disconnect from NTRIP caster
+   */
+  async disconnectNtrip() {
+    const ntripConnect = this.container.querySelector('#ntrip-connect');
+    const ntripDisconnect = this.container.querySelector('#ntrip-disconnect');
+    
+    if (ntripDisconnect) ntripDisconnect.disabled = true;
+    
+    await this.gnssModule.disconnectNtrip();
+    
+    if (ntripConnect) ntripConnect.disabled = false;
+    if (ntripDisconnect) ntripDisconnect.disabled = true;
+  }
+
+  /**
+   * Apply rover settings
+   */
+  async applyRoverSettings() {
+    const dynamicModel = this.container.querySelector('#rover-dynamic-model').value;
+    const messageRate = parseInt(this.container.querySelector('#rover-message-rate').value);
+    
+    // Save settings
+    await this.gnssModule.settings.update('rover', {
+      dynamicModel,
+      messageRate
+    });
+    
+    // Apply settings to rover
+    await this.gnssModule.configureRover({
+      dynamicModel,
+      messageRate
+    });
+    
+    alert('Rover settings applied successfully');
+  }
+
+  /**
+   * Set up event listeners for gnssModule events
+   */
+  setupModuleEventListeners() {
+    // Generic connection events
+    this.gnssModule.events.on('connection:connected', (data) => {
+      const connectionStatus = this.container.querySelector('#connection-status');
+      const connectionMethodDisplay = this.container.querySelector('#connection-method-display');
+      const connectionDevice = this.container.querySelector('#connection-device');
+      const btConnect = this.container.querySelector('#bt-connect');
+      const serialConnect = this.container.querySelector('#serial-connect');
+      const deviceDisconnect = this.container.querySelector('#device-disconnect');
+      
+      if (connectionStatus) connectionStatus.textContent = 'Connected';
+      if (connectionMethodDisplay) connectionMethodDisplay.textContent = data.method || 'Unknown';
+      if (connectionDevice) {
+        const deviceInfo = data.deviceInfo || {};
+        connectionDevice.textContent = deviceInfo.name || deviceInfo.id || 'Unknown';
+      }
+      
+      // Disable connect buttons and enable disconnect
+      if (btConnect) btConnect.disabled = true;
+      if (serialConnect) serialConnect.disabled = true;
+      if (deviceDisconnect) deviceDisconnect.disabled = false;
+    });
+    
+    this.gnssModule.events.on('connection:disconnected', () => {
+      const connectionStatus = this.container.querySelector('#connection-status');
+      const connectionMethodDisplay = this.container.querySelector('#connection-method-display');
+      const connectionDevice = this.container.querySelector('#connection-device');
+      const btConnect = this.container.querySelector('#bt-connect');
+      const serialConnect = this.container.querySelector('#serial-connect');
+      const deviceDisconnect = this.container.querySelector('#device-disconnect');
+      
+      if (connectionStatus) connectionStatus.textContent = 'Disconnected';
+      if (connectionMethodDisplay) connectionMethodDisplay.textContent = 'None';
+      if (connectionDevice) connectionDevice.textContent = 'None';
+      
+      // Enable connect buttons and disable disconnect
+      if (btConnect) btConnect.disabled = false;
+      if (serialConnect) serialConnect.disabled = false;
+      if (deviceDisconnect) deviceDisconnect.disabled = true;
+    });
+    
+    this.gnssModule.events.on('connection:error', (data) => {
+      const connectionStatus = this.container.querySelector('#connection-status');
+      const btConnect = this.container.querySelector('#bt-connect');
+      const serialConnect = this.container.querySelector('#serial-connect');
+      
+      if (connectionStatus) connectionStatus.textContent = `Error: ${data.message}`;
+      if (btConnect) btConnect.disabled = false;
+      if (serialConnect) serialConnect.disabled = false;
+      
+      console.error('Connection error:', data.error);
+    });
+    
+    // Also listen to Bluetooth-specific events for backward compatibility
+    this.gnssModule.events.on('bluetooth:connected', (data) => {
+      const connectionStatus = this.container.querySelector('#connection-status');
+      const connectionMethodDisplay = this.container.querySelector('#connection-method-display');
+      const connectionDevice = this.container.querySelector('#connection-device');
+      const btConnect = this.container.querySelector('#bt-connect');
+      const serialConnect = this.container.querySelector('#serial-connect');
+      const deviceDisconnect = this.container.querySelector('#device-disconnect');
+      
+      if (connectionStatus) connectionStatus.textContent = 'Connected';
+      if (connectionMethodDisplay) connectionMethodDisplay.textContent = 'Bluetooth';
+      if (connectionDevice) connectionDevice.textContent = data.deviceName || data.deviceId || 'Unknown';
+      
+      if (btConnect) btConnect.disabled = true;
+      if (serialConnect) serialConnect.disabled = true;
+      if (deviceDisconnect) deviceDisconnect.disabled = false;
+    });
+    
+    // Serial-specific events
+    this.gnssModule.events.on('serial:connected', (data) => {
+      const connectionStatus = this.container.querySelector('#connection-status');
+      const connectionMethodDisplay = this.container.querySelector('#connection-method-display');
+      const connectionDevice = this.container.querySelector('#connection-device');
+      const btConnect = this.container.querySelector('#bt-connect');
+      const serialConnect = this.container.querySelector('#serial-connect');
+      const deviceDisconnect = this.container.querySelector('#device-disconnect');
+      
+      if (connectionStatus) connectionStatus.textContent = 'Connected';
+      if (connectionMethodDisplay) connectionMethodDisplay.textContent = 'Serial';
+      
+      // Display device info
+      if (connectionDevice &amp;&amp; data.deviceInfo) {
+        const deviceInfo = data.deviceInfo;
+        let displayText = 'USB Device';
+        if (deviceInfo.usbVendorId) {
+          displayText += ` (Vendor: 0x${deviceInfo.usbVendorId.toString(16)})`;
+        }
+        connectionDevice.textContent = displayText;
+      }
+      
+      if (btConnect) btConnect.disabled = true;
+      if (serialConnect) serialConnect.disabled = true;
+      if (deviceDisconnect) deviceDisconnect.disabled = false;
+    });
+    
+    // NTRIP events
+    this.gnssModule.events.on('ntrip:connected', (data) => {
+      const ntripStatus = this.container.querySelector('#ntrip-status');
+      const ntripConnect = this.container.querySelector('#ntrip-connect');
+      const ntripDisconnect = this.container.querySelector('#ntrip-disconnect');
+      const ntripMode = this.container.querySelector('#ntrip-mode');
+      
+      if (ntripStatus) ntripStatus.textContent = 'Connected';
+      if (ntripConnect) ntripConnect.disabled = true;
+      if (ntripDisconnect) ntripDisconnect.disabled = false;
+      
+      // Show connection mode
+      if (ntripMode &amp;&amp; data.mode) {
+        ntripMode.textContent = data.mode.charAt(0).toUpperCase() + data.mode.slice(1);
+      }
+    });
+    
+    this.gnssModule.events.on('ntrip:disconnected', () => {
+      const ntripStatus = this.container.querySelector('#ntrip-status');
+      const ntripConnect = this.container.querySelector('#ntrip-connect');
+      const ntripDisconnect = this.container.querySelector('#ntrip-disconnect');
+      const ntripMode = this.container.querySelector('#ntrip-mode');
+      
+      if (ntripStatus) ntripStatus.textContent = 'Disconnected';
+      if (ntripConnect) ntripConnect.disabled = false;
+      if (ntripDisconnect) ntripDisconnect.disabled = true;
+      if (ntripMode) ntripMode.textContent = '-';
+    });
+    
+    // Listen for info messages about connection mode changes
+    this.gnssModule.events.on('ntrip:info', (data) => {
+      const ntripMode = this.container.querySelector('#ntrip-mode');
+      
+      // Update mode if it's a CORS fallback message
+      if (data.message &amp;&amp; data.message.includes('CORS issue detected') &amp;&amp; ntripMode) {
+        ntripMode.textContent = 'Proxy (auto-fallback)';
+      }
+    });
+    
+    this.gnssModule.events.on('ntrip:error', (data) => {
+      const ntripStatus = this.container.querySelector('#ntrip-status');
+      const ntripConnect = this.container.querySelector('#ntrip-connect');
+      
+      if (ntripStatus) ntripStatus.textContent = `Error: ${data.message}`;
+      if (ntripConnect) ntripConnect.disabled = false;
+      
+      console.error('NTRIP error:', data.error);
+    });
+  }
+}
+
+export default SettingsPage;</code></pre></article></section></div></div></div><div class="search-container" id="PkfLWpAbet" style="display:none"><div class="wrapper" id="iCxFxjkHbP"><button class="icon-button search-close-button" id="VjLlGakifb" aria-label="close search"><svg><use xlink:href="#close-icon"></use></svg></button><div class="search-box-c"><svg><use xlink:href="#search-icon"></use></svg> <input type="text" id="vpcKVYIppa" class="search-input" placeholder="Search..." autofocus></div><div class="search-result-c" id="fWwVHRuDuN"><span class="search-result-c-text">Type anything to view search result</span></div></div></div><div class="mobile-menu-icon-container"><button class="icon-button" id="mobile-menu" data-isopen="false" aria-label="menu"><svg><use xlink:href="#menu-icon"></use></svg></button></div><div id="mobile-sidebar" class="mobile-sidebar-container"><div class="mobile-sidebar-wrapper"><div class="mobile-nav-links"></div><div class="mobile-sidebar-items-c"><div class="sidebar-section-title with-arrow" data-isopen="false" id="sidebar-classes"><div>Classes</div><svg><use xlink:href="#down-icon"></use></svg></div><div class="sidebar-section-children-container"><div class="sidebar-section-children"><a href="BluetoothConnection.html">BluetoothConnection</a></div><div class="sidebar-section-children"><a href="ConnectionHandler.html">ConnectionHandler</a></div><div class="sidebar-section-children"><a href="ConnectionManager.html">ConnectionManager</a></div><div class="sidebar-section-children"><a href="DeviceSettings.html">DeviceSettings</a></div><div class="sidebar-section-children"><a href="EventEmitter.html">EventEmitter</a></div><div class="sidebar-section-children"><a href="GnssModule.html">GnssModule</a></div><div class="sidebar-section-children"><a href="NmeaParser.html">NmeaParser</a></div><div class="sidebar-section-children"><a href="NtripClient.html">NtripClient</a></div><div class="sidebar-section-children"><a href="RtkSettings.html">RtkSettings</a></div><div class="sidebar-section-children"><a href="RtkStatus.html">RtkStatus</a></div><div class="sidebar-section-children"><a href="Settings.html">Settings</a></div><div class="sidebar-section-children"><a href="SettingsPage.html">SettingsPage</a></div></div></div><div class="mobile-navbar-actions"><div class="navbar-right-item"><button class="icon-button search-button" aria-label="open-search"><svg><use xlink:href="#search-icon"></use></svg></button></div><div class="navbar-right-item"><button class="icon-button theme-toggle" aria-label="toggle-theme"><svg><use class="theme-svg-use" xlink:href="#light-theme-icon"></use></svg></button></div><div class="navbar-right-item"><button class="icon-button font-size" aria-label="change-font-size"><svg><use xlink:href="#font-size-icon"></use></svg></button></div></div></div></div><script type="text/javascript" src="scripts/core.min.js"></script><script src="scripts/search.min.js" defer="defer"></script><script src="scripts/third-party/fuse.js" defer="defer"></script><script type="text/javascript">var tocbotInstance=tocbot.init({tocSelector:"#eed4d2a0bfd64539bb9df78095dec881",contentSelector:".main-content",headingSelector:"h1, h2, h3",hasInnerContainers:!0,scrollContainer:".main-content",headingsOffset:130,onClick:bringLinkToView})</script></body></html>
