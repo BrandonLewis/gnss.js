@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/BrandonLewis/gnss.js/compare/v1.2.1...v1.2.2) (2025-05-09)
+
+
+### Bug Fixes
+
+* resolve npm publishing error with non-scoped package ([a7c0e99](https://github.com/BrandonLewis/gnss.js/commit/a7c0e99eaf92d4790dfee3fe8761df63ca423176))
+
 ## [1.2.1](https://github.com/BrandonLewis/gnss.js/compare/v1.2.0...v1.2.1) (2025-05-09)
 
 
