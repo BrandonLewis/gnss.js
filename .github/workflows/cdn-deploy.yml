@@ -95,10 +95,15 @@ jobs:
           echo "Final dist files:"
           du -sh dist/*
           
-          # Add and commit changes
+          # Add and commit changes if there are any
           git add dist docs
-          git commit -m "Update CDN files and docs for tag ${{ github.ref_name }}"
-          git push origin cdn-dist
+          
+          if git diff --cached --quiet; then
+            echo "No changes detected in dist or docs. Skipping commit."
+          else
+            git commit -m "Update CDN files and docs for tag ${{ github.ref_name }}"
+            git push origin cdn-dist
+          fi
 
       - name: Update latest tag
         run: |
