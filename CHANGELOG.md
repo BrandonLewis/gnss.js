@@ -1,3 +1,10 @@
+## [1.2.4](https://github.com/BrandonLewis/gnss.js/compare/v1.2.3...v1.2.4) (2025-05-09)
+
+
+### Bug Fixes
+
+* enhance CDN deployment workflow reliability ([4440715](https://github.com/BrandonLewis/gnss.js/commit/4440715e5ff387a27c56e76712741a720623e7ce))
+
 ## [1.2.3](https://github.com/BrandonLewis/gnss.js/compare/v1.2.2...v1.2.3) (2025-05-09)
 
 
