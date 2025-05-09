@@ -1,3 +1,10 @@
+## [1.2.5](https://github.com/BrandonLewis/gnss.js/compare/v1.2.4...v1.2.5) (2025-05-09)
+
+
+### Bug Fixes
+
+* add uncommitted changes handling to CDN workflow ([2c0a419](https://github.com/BrandonLewis/gnss.js/commit/2c0a419faa8f4c238939a207fe31502c271292f7))
+
 ## [1.2.4](https://github.com/BrandonLewis/gnss.js/compare/v1.2.3...v1.2.4) (2025-05-09)
 
 
