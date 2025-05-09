@@ -171,8 +171,9 @@ class GnssModule {
       // Important: This must be called directly in response to a user gesture
       // Create the options for requestDevice
       const requestOptions = {
+        // cannot have both acceptAllDevices and filters
         acceptAllDevices: !options.filters,
-        filters: options.filters || [],
+        filters: options.filters || null,
         optionalServices: [
           // Common UART services
           '6e400001-b5a3-f393-e0a9-e50e24dcca9e', // Nordic UART Service
