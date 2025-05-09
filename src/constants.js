@@ -98,6 +98,10 @@ export const EVENTS = {
   POSITION_UPDATE: 'position:update',
   SATELLITES_UPDATE: 'satellites:update',
   
+  // Public API events (forwarded versions of internal events)
+  POSITION: 'position',
+  SATELLITES: 'satellites',
+  
   // NTRIP events
   NTRIP_CONNECTING: 'ntrip:connecting',
   NTRIP_CONNECTED: 'ntrip:connected',

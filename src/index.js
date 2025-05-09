@@ -105,15 +105,15 @@ class GnssModule {
     // Listen for position updates from NMEA parser
     this.events.on(EVENTS.POSITION_UPDATE, (position) => {
       this.currentPosition = position;
-      // Forward position update to any listeners
-      this.events.emit('position', position);
+      // Forward position update using the public API event name
+      this.events.emit(EVENTS.POSITION, position);
     });
     
     // Listen for satellite updates from NMEA parser
     this.events.on(EVENTS.SATELLITES_UPDATE, (satellites) => {
       this.satellites = satellites;
-      // Forward satellites update to any listeners
-      this.events.emit('satellites', satellites);
+      // Forward satellites update using the public API event name
+      this.events.emit(EVENTS.SATELLITES, satellites);
     });
     
     // Forward RTCM data to device when connected
@@ -230,7 +230,7 @@ class GnssModule {
         position: this.currentPosition
       });
     } catch (error) {
-      this.events.emit('ntrip:error', { message: error.message });
+      this.events.emit(EVENTS.NTRIP_ERROR, { message: error.message });
       return false;
     }
   }

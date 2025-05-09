@@ -306,8 +306,8 @@
       }
     });
     
-    // Set up event listeners using standardized event names
-    gnss.on(EVENTS.POSITION_UPDATE, (position) => {
+    // Set up event listeners using public API event names
+    gnss.on(EVENTS.POSITION, (position) => {
       logMessage(`Position updated: ${position.latitude.toFixed(6)},${position.longitude.toFixed(6)}`, 'info');
       
       positionEl.innerHTML = `
@@ -341,7 +341,7 @@
       `;
     });
     
-    gnss.on(EVENTS.SATELLITES_UPDATE, (satellites) => {
+    gnss.on(EVENTS.SATELLITES, (satellites) => {
       if (!satellites || satellites.length === 0) {
         satellitesEl.innerHTML = '<tr><td colspan="6">No satellite data available</td></tr>';
         return;

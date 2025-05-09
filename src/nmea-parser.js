@@ -116,7 +116,12 @@ export class NmeaParser {
           }
           
           // Check if satellite data has been updated
+          // GSV data updates satellites in view
           if (parsed.type === 'GSV' && parsed.messageNumber === parsed.totalMessages) {
+            satellitesUpdated = true;
+          }
+          // GSA data also updates satellite information (which satellites are used in the fix)
+          else if (parsed.type === 'GSA') {
             satellitesUpdated = true;
           }
         }
@@ -134,7 +139,8 @@ export class NmeaParser {
           ...position,
           timestamp: new Date()
         };
-        this.events.emit('nmea:position', positionWithTimestamp);
+        // Use the standardized event name from constants.js (position:update)
+        this.events.emit('position:update', positionWithTimestamp);
       }
     }
     
@@ -142,7 +148,8 @@ export class NmeaParser {
     if (satellitesUpdated && this.events) {
       const satellites = this.getSatellites();
       if (satellites && satellites.length > 0) {
-        this.events.emit('nmea:satellites', satellites);
+        // Use the standardized event name from constants.js (satellites:update)
+        this.events.emit('satellites:update', satellites);
       }
     }
     
@@ -364,10 +371,32 @@ export class NmeaParser {
   parseGSA(parts) {
     const satellites = [];
     
+    // Reset all 'used' flags for tracked satellites
+    Object.keys(this.satellitesById).forEach(key => {
+      if (this.satellitesById[key]) {
+        this.satellitesById[key].used = false;
+      }
+    });
+    
     // Extract satellite IDs (parts 3-14)
     for (let i = 3; i <= 14; i++) {
       if (parts[i] && parts[i].trim() !== '') {
-        satellites.push(parseInt(parts[i]));
+        const prn = parseInt(parts[i]);
+        satellites.push(prn);
+        
+        // Mark this satellite as used in our satellite tracking
+        if (this.satellitesById[prn]) {
+          this.satellitesById[prn].used = true;
+        } else {
+          // Create a placeholder entry if the satellite isn't in our list yet
+          this.satellitesById[prn] = {
+            prn,
+            used: true,
+            elevation: null,
+            azimuth: null,
+            snr: null
+          };
+        }
       }
     }
     
@@ -412,11 +441,15 @@ export class NmeaParser {
         const prn = parseInt(parts[baseIndex] || '0');
         if (prn === 0) continue; // Skip invalid PRNs
         
+        // Create or update satellite info
+        const existingSatellite = this.satellitesById[prn] || {};
         const satellite = {
           prn,
           elevation: parseInt(parts[baseIndex + 1] || '0'),
           azimuth: parseInt(parts[baseIndex + 2] || '0'),
-          snr: parts[baseIndex + 3] ? parseInt(parts[baseIndex + 3]) : null
+          snr: parts[baseIndex + 3] ? parseInt(parts[baseIndex + 3]) : null,
+          // Preserve the 'used' flag if it was set by GSA sentence
+          used: existingSatellite.used || false
         };
         
         // Store satellite by PRN in our tracking object
@@ -666,6 +699,7 @@ export class NmeaParser {
     Object.keys(this.sentenceStats).forEach(key => {
       this.sentenceStats[key] = 0;
     });
+    this.lastSentenceTime = Date.now();
   }
 }
 
