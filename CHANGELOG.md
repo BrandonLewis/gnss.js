@@ -1,3 +1,10 @@
+## [1.2.7](https://github.com/BrandonLewis/gnss.js/compare/v1.2.6...v1.2.7) (2025-05-09)
+
+
+### Bug Fixes
+
+* resolve 'refusing to merge unrelated histories' error in CDN workflow ([3e7d8ee](https://github.com/BrandonLewis/gnss.js/commit/3e7d8eed01a9dc272b1e91806026804aa5d90618))
+
 ## [1.2.6](https://github.com/BrandonLewis/gnss.js/compare/v1.2.5...v1.2.6) (2025-05-09)
 
 
