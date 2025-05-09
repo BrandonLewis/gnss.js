@@ -5,7 +5,6 @@
  * via Web Bluetooth or Web Serial, parsing NMEA data, and managing NTRIP correction data.
  */
 import { EventEmitter } from './event-emitter.js';
-import { BluetoothConnection } from './bluetooth.js'; 
 import { NmeaParser } from './nmea-parser.js';
 import { NtripClient } from './ntrip-client.js';
 import { Settings } from './settings.js';
@@ -15,6 +14,7 @@ import { SerialHandler } from './connection/serial-handler.js';
 import { RtkSettings } from './ui/rtk-settings.js'; 
 import { RtkStatus } from './ui/rtk-status.js';
 import { DeviceSettings } from './ui/device-settings.js';
+import { EVENTS, BLE_SERVICES } from './constants.js';
 
 /**
  * Main GNSS Module class
@@ -103,26 +103,28 @@ class GnssModule {
    */
   _setupEventListeners() {
     // Listen for position updates from NMEA parser
-    this.events.on('nmea:position', (position) => {
+    this.events.on(EVENTS.POSITION_UPDATE, (position) => {
       this.currentPosition = position;
+      // Forward position update to any listeners
       this.events.emit('position', position);
     });
     
     // Listen for satellite updates from NMEA parser
-    this.events.on('nmea:satellites', (satellites) => {
+    this.events.on(EVENTS.SATELLITES_UPDATE, (satellites) => {
       this.satellites = satellites;
+      // Forward satellites update to any listeners
       this.events.emit('satellites', satellites);
     });
     
     // Forward RTCM data to device when connected
-    this.events.on('ntrip:rtcm', (rtcmData) => {
+    this.events.on(EVENTS.NTRIP_DATA, (rtcmData) => {
       if (this.connectionManager.isConnected()) {
         this.connectionManager.sendData(rtcmData.data);
       }
     });
     
     // Handle device settings application request
-    this.events.on('device:apply:settings', (settings) => {
+    this.events.on(EVENTS.DEVICE_CONFIGURING, (settings) => {
       this.configureDevice(settings);
     });
   }
@@ -138,25 +140,15 @@ class GnssModule {
       
       if (connected) {
         // Setup data flow from device to NMEA parser
-        // We need to listen for both generic and specific device data events
-        this.events.on('device:data', (data) => {
-          this.nmeaParser.parse(data);
-        });
-        
-        // Also listen for bluetooth-specific data
-        this.events.on('bluetooth:data', (data) => {
-          this.nmeaParser.parse(data);
-        });
-        
-        // Also listen for serial-specific data
-        this.events.on('serial:data', (data) => {
+        // Only listen for the standardized device:data event
+        this.events.on(EVENTS.DATA_RECEIVED, (data) => {
           this.nmeaParser.parse(data);
         });
       }
       
       return connected;
     } catch (error) {
-      this.events.emit('connection:error', { message: error.message });
+      this.events.emit(EVENTS.CONNECTION_ERROR, { message: error.message });
       return false;
     }
   }
@@ -172,29 +164,27 @@ class GnssModule {
       // Create the options for requestDevice
       const requestOptions = {
         optionalServices: [
-          // Common UART services
-          '6e400001-b5a3-f393-e0a9-e50e24dcca9e', // Nordic UART Service
-          '0000ffe0-0000-1000-8000-00805f9b34fb', // Nordic UART Service (alternate)
-          '49535343-fe7d-4ae5-8fa9-9fafd205e455', // HM-10/HM-16/HM-17 Service
-          '0000fff0-0000-1000-8000-00805f9b34fb', // HC-08/HC-10 Service
-          
-          // Generic services
-          '00001800-0000-1000-8000-00805f9b34fb', // Generic Access
-          '00001801-0000-1000-8000-00805f9b34fb', // Generic Attribute
-          
-          // SparkFun specific
-          '0000fe9a-0000-1000-8000-00805f9b34fb',  // Custom service
-          
-          // Classic Bluetooth services
-          '00001101-0000-1000-8000-00805f9b34fb', // SPP
+          // Use service UUIDs from constants
+          BLE_SERVICES.NORDIC_UART,
+          BLE_SERVICES.UART_ALTERNATIVE,
+          BLE_SERVICES.HM_MODULE,
+          BLE_SERVICES.HC_MODULE,
+          BLE_SERVICES.GENERIC_ACCESS,
+          BLE_SERVICES.GENERIC_ATTRIBUTE,
+          BLE_SERVICES.SPARKFUN_CUSTOM,
+          BLE_SERVICES.SPP,
+          BLE_SERVICES.HEART_RATE,
+          BLE_SERVICES.DEVICE_INFO
         ]
       };
-      // cannot have both acceptAllDevices and filters
+      
+      // Cannot have both acceptAllDevices and filters
       if (!options.filters) {
-        Object.assign(requestOptions, {acceptAllDevices:true});
+        Object.assign(requestOptions, {acceptAllDevices: true});
       } else {
         Object.assign(requestOptions, {filters: options.filters});
       }
+      
       // Request device directly (this must happen in direct response to user gesture)
       const device = await navigator.bluetooth.requestDevice(requestOptions);
       
@@ -207,11 +197,11 @@ class GnssModule {
     } catch (error) {
       // Handle the case where user cancels the dialog
       if (error.name === 'NotFoundError') {
-        this.events.emit('connection:error', { message: 'No device selected' });
+        this.events.emit(EVENTS.CONNECTION_ERROR, { message: 'No device selected' });
         return false;
       }
       
-      this.events.emit('connection:error', { message: error.message });
+      this.events.emit(EVENTS.CONNECTION_ERROR, { message: error.message });
       return false;
     }
   }
@@ -353,7 +343,6 @@ export { GnssModule };
 
 // Export other classes for extensibility
 export { EventEmitter };
-export { BluetoothConnection };
 export { NmeaParser };
 export { NtripClient };
 export { Settings };
@@ -364,5 +353,8 @@ export { RtkSettings };
 export { RtkStatus };
 export { DeviceSettings };
 
-// Export default GnssModule for backward compatibility
+// Export constants for advanced usage
+export { EVENTS, BLE_SERVICES, BLE_CHARACTERISTICS } from './constants.js';
+
+// Export default GnssModule as the primary entry point
 export default GnssModule;

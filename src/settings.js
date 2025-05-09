@@ -1,6 +1,8 @@
 /**
  * Settings - Manages and persists module settings
  */
+import { DEFAULT_CONNECTION_SETTINGS, DEFAULT_NTRIP_SETTINGS } from './constants.js';
+
 export class Settings {
   constructor() {
     this.dbName = 'gnss-module-db';
@@ -9,47 +11,40 @@ export class Settings {
     this.settings = {
       // Connection settings
       connection: {
-        preferredMethod: 'auto', // 'auto', 'bluetooth', 'serial'
-        lastMethod: null,        // Last successfully used method
-        autoConnect: false,      // Auto-connect on startup
-        connectionTimeout: 10000, // Connection timeout in milliseconds
+        preferredMethod: DEFAULT_CONNECTION_SETTINGS.preferredMethod,
+        lastMethod: null,
+        autoConnect: false,
+        connectionTimeout: DEFAULT_CONNECTION_SETTINGS.connectionTimeout,
         
         // Method-specific settings
         bluetooth: {
-          lastDeviceId: null,    // ID of last connected device
-          preferBLE: true,       // Prefer BLE over classic Bluetooth
-          filters: []            // Device name filters
+          lastDeviceId: null,
+          preferBLE: DEFAULT_CONNECTION_SETTINGS.bluetooth.preferBLE,
+          filters: []
         },
         serial: {
-          baudRate: 9600,        // Default baud rate
-          dataBits: 8,           // Default data bits
-          stopBits: 1,           // Default stop bits
-          parity: 'none',        // Default parity
-          flowControl: 'none',   // Default flow control
-          lastPort: null         // Last used port info
+          baudRate: DEFAULT_CONNECTION_SETTINGS.serial.baudRate,
+          dataBits: DEFAULT_CONNECTION_SETTINGS.serial.dataBits,
+          stopBits: DEFAULT_CONNECTION_SETTINGS.serial.stopBits,
+          parity: DEFAULT_CONNECTION_SETTINGS.serial.parity,
+          flowControl: DEFAULT_CONNECTION_SETTINGS.serial.flowControl,
+          lastPort: null
         }
-      },
-      
-      // Legacy bluetooth settings for backward compatibility
-      bluetooth: {
-        lastDeviceId: null,
-        autoConnect: false,
-        connectionTimeout: 10000, // 10 seconds
       },
       
       // NTRIP settings
       ntrip: {
         host: '',
-        port: 2101,
+        port: DEFAULT_NTRIP_SETTINGS.port,
         mountpoint: '',
         username: '',
         password: '',
-        autoConnect: false,
+        autoConnect: DEFAULT_NTRIP_SETTINGS.autoConnect,
         proxyUrl: 'http://localhost:3000',
-        useProxy: false,
-        autoDetectCors: true,
-        ggaUpdateInterval: 10,
-        autoSendGga: true,
+        useProxy: DEFAULT_NTRIP_SETTINGS.useProxy,
+        autoDetectCors: DEFAULT_NTRIP_SETTINGS.autoDetectCors,
+        ggaUpdateInterval: DEFAULT_NTRIP_SETTINGS.ggaUpdateInterval,
+        autoSendGga: DEFAULT_NTRIP_SETTINGS.autoSendGga,
       },
       
       // UI settings
@@ -116,12 +111,6 @@ export class Settings {
           
           // Deep merge the settings
           this.deepMerge(this.settings, savedSettings);
-          
-          // Handle backward compatibility by copying legacy bluetooth settings to new structure
-          if (savedSettings.bluetooth && !savedSettings.connection) {
-            this.settings.connection.bluetooth.lastDeviceId = this.settings.bluetooth.lastDeviceId;
-            this.settings.connection.autoConnect = this.settings.bluetooth.autoConnect;
-          }
         }
         resolve();
       };
@@ -203,15 +192,6 @@ export class Settings {
     
     this.settings[section][key] = value;
     
-    // Handle backward compatibility
-    if (section === 'connection' && key === 'autoConnect') {
-      this.settings.bluetooth.autoConnect = value;
-    } else if (section === 'connection' && key === 'bluetooth') {
-      if (value && value.lastDeviceId) {
-        this.settings.bluetooth.lastDeviceId = value.lastDeviceId;
-      }
-    }
-    
     await this.saveSettings();
     return value;
   }
@@ -230,11 +210,6 @@ export class Settings {
       ...this.settings[section],
       ...values
     };
-    
-    // Handle backward compatibility
-    if (section === 'connection' && values.autoConnect !== undefined) {
-      this.settings.bluetooth.autoConnect = values.autoConnect;
-    }
     
     await this.saveSettings();
     return this.settings[section];
@@ -263,44 +238,38 @@ export class Settings {
   async reset() {
     this.settings = {
       connection: {
-        preferredMethod: 'auto',
+        preferredMethod: DEFAULT_CONNECTION_SETTINGS.preferredMethod,
         lastMethod: null,
         autoConnect: false,
-        connectionTimeout: 10000,
+        connectionTimeout: DEFAULT_CONNECTION_SETTINGS.connectionTimeout,
         
         bluetooth: {
           lastDeviceId: null,
-          preferBLE: true,
+          preferBLE: DEFAULT_CONNECTION_SETTINGS.bluetooth.preferBLE,
           filters: []
         },
         serial: {
-          baudRate: 9600,
-          dataBits: 8,
-          stopBits: 1,
-          parity: 'none',
-          flowControl: 'none',
+          baudRate: DEFAULT_CONNECTION_SETTINGS.serial.baudRate,
+          dataBits: DEFAULT_CONNECTION_SETTINGS.serial.dataBits,
+          stopBits: DEFAULT_CONNECTION_SETTINGS.serial.stopBits,
+          parity: DEFAULT_CONNECTION_SETTINGS.serial.parity,
+          flowControl: DEFAULT_CONNECTION_SETTINGS.serial.flowControl,
           lastPort: null
         }
       },
       
-      bluetooth: {
-        lastDeviceId: null,
-        autoConnect: false,
-        connectionTimeout: 10000,
-      },
-      
       ntrip: {
         host: '',
-        port: 2101,
+        port: DEFAULT_NTRIP_SETTINGS.port,
         mountpoint: '',
         username: '',
         password: '',
-        autoConnect: false,
+        autoConnect: DEFAULT_NTRIP_SETTINGS.autoConnect,
         proxyUrl: 'http://localhost:3000',
-        useProxy: false,
-        autoDetectCors: true,
-        ggaUpdateInterval: 10,
-        autoSendGga: true,
+        useProxy: DEFAULT_NTRIP_SETTINGS.useProxy,
+        autoDetectCors: DEFAULT_NTRIP_SETTINGS.autoDetectCors,
+        ggaUpdateInterval: DEFAULT_NTRIP_SETTINGS.ggaUpdateInterval,
+        autoSendGga: DEFAULT_NTRIP_SETTINGS.autoSendGga,
       },
       
       ui: {

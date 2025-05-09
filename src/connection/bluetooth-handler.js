@@ -2,6 +2,7 @@
  * BluetoothHandler - Implements Web Bluetooth connections
  */
 import { ConnectionHandler } from './connection-handler.js';
+import { BLE_SERVICES, BLE_CHARACTERISTICS, EVENTS } from '../constants.js';
 
 export class BluetoothHandler extends ConnectionHandler {
   constructor(eventEmitter, options = {}) {
@@ -17,64 +18,48 @@ export class BluetoothHandler extends ConnectionHandler {
     this.pollingEnabled = false;
     this.pollingInterval = null;
     
-    // Common BLE UART/Serial service UUIDs
-    // Prioritizing BLE services first since the Sparkfun Facet RTK Rover uses BLE
+    // Use the service UUIDs from the constants module
     this.SERVICE_UUIDS = [
-      // BLE UART Services (most common)
-      '6e400001-b5a3-f393-e0a9-e50e24dcca9e', // Nordic UART Service (nRF51822, very common in BLE devices)
-      '0000ffe0-0000-1000-8000-00805f9b34fb', // Nordic UART Service (alternate form)
-      '49535343-fe7d-4ae5-8fa9-9fafd205e455', // Common HM-10/HM-16/HM-17 BLE Module Service
-      '0000fff0-0000-1000-8000-00805f9b34fb', // Common HC-08/HC-10 BLE Service
-      
-      // Generic BLE services that might be useful
-      '00001801-0000-1000-8000-00805f9b34fb', // Generic Attribute Service
-      '00001800-0000-1000-8000-00805f9b34fb', // Generic Access Service
-      
-      // SparkFun RTK-specific services (if they use custom services)
-      '0000fe9a-0000-1000-8000-00805f9b34fb',  // Possible custom service
-      
-      // Legacy Classic Bluetooth services (less likely on BLE devices)
-      '00001101-0000-1000-8000-00805f9b34fb', // SPP (Serial Port Profile) - Classic Bluetooth
-      
-      // Testing/fallback services
-      '0000180d-0000-1000-8000-00805f9b34fb'  // Heart Rate Service (for testing)
+      BLE_SERVICES.NORDIC_UART,
+      BLE_SERVICES.UART_ALTERNATIVE,
+      BLE_SERVICES.HM_MODULE,
+      BLE_SERVICES.HC_MODULE,
+      BLE_SERVICES.GENERIC_ATTRIBUTE,
+      BLE_SERVICES.GENERIC_ACCESS,
+      BLE_SERVICES.SPARKFUN_CUSTOM,
+      BLE_SERVICES.SPP,
+      BLE_SERVICES.HEART_RATE,
+      BLE_SERVICES.DEVICE_INFO
     ];
     
-    // Common BLE characteristic UUIDs
-    // Nordic UART (nRF UART) characteristic UUIDs - very common in BLE devices
-    // IMPORTANT: The naming can be confusing:
-    // TX from the device perspective = RX from our perspective (we receive data the device transmits)
-    // RX from the device perspective = TX from our perspective (we transmit data the device receives)
-    this.NORDIC_RX_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e'; // RX (we receive data from device) - has NOTIFY
-    this.NORDIC_TX_UUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e'; // TX (we transmit data to device) - has WRITE
+    // Use the characteristic UUIDs from the constants module
+    // Device transmit = We receive
+    this.NORDIC_RX_UUID = BLE_CHARACTERISTICS.NORDIC_TX;
+    // Device receive = We transmit
+    this.NORDIC_TX_UUID = BLE_CHARACTERISTICS.NORDIC_RX;
     
-    // Common alternate BLE characteristic UUIDs
-    // These are characteristics where WE TRANSMIT TO the device
+    // Characteristics where WE TRANSMIT TO the device
     this.BLE_TX_UUIDS = [
-      // Nordic UART variants
-      '6e400003-b5a3-f393-e0a9-e50e24dcca9e', // Nordic TX - we write to this one
-      '0000ffe2-0000-1000-8000-00805f9b34fb', // Common BLE TX
-      '0000fff2-0000-1000-8000-00805f9b34fb', // HC-08 TX
-      '49535343-1e4d-4bd9-ba61-23c647249616', // HM-10 TX
-      // SparkFun might use a custom characteristic
-      '0000fe9a-0003-1000-8000-00805f9b34fb'  // Possible custom TX
+      BLE_CHARACTERISTICS.NORDIC_RX,
+      BLE_CHARACTERISTICS.UART_RX,
+      BLE_CHARACTERISTICS.HC_RX,
+      BLE_CHARACTERISTICS.HM10_RX,
+      BLE_CHARACTERISTICS.SPARKFUN_RX
     ];
     
-    // These are characteristics where WE RECEIVE FROM the device
+    // Characteristics where WE RECEIVE FROM the device
     this.BLE_RX_UUIDS = [
-      // Nordic UART variants
-      '6e400002-b5a3-f393-e0a9-e50e24dcca9e', // Nordic RX - we read from this one
-      '0000ffe1-0000-1000-8000-00805f9b34fb', // Common BLE RX
-      '0000fff1-0000-1000-8000-00805f9b34fb', // HC-08 RX
-      '49535343-8841-43f4-a8d4-ecbe34729bb3', // HM-10 RX
-      // SparkFun might use a custom characteristic
-      '0000fe9a-0002-1000-8000-00805f9b34fb'  // Possible custom RX
+      BLE_CHARACTERISTICS.NORDIC_TX,
+      BLE_CHARACTERISTICS.UART_TX,
+      BLE_CHARACTERISTICS.HC_TX,
+      BLE_CHARACTERISTICS.HM10_TX,
+      BLE_CHARACTERISTICS.SPARKFUN_TX
     ];
     
-    // Legacy names for backward compatibility 
-    this.SPP_SERVICE_UUID = '00001101-0000-1000-8000-00805f9b34fb';
-    this.SPP_RX_UUID = '00001102-0000-1000-8000-00805f9b34fb';
-    this.SPP_TX_UUID = '00001103-0000-1000-8000-00805f9b34fb';
+    // Legacy UUIDs from constants
+    this.SPP_SERVICE_UUID = BLE_SERVICES.SPP;
+    this.SPP_RX_UUID = BLE_CHARACTERISTICS.SPP_RX;
+    this.SPP_TX_UUID = BLE_CHARACTERISTICS.SPP_TX;
     
     // Bind methods
     this.onDisconnected = this.onDisconnected.bind(this);
@@ -787,9 +772,9 @@ export class BluetoothHandler extends ConnectionHandler {
       
       // Only emit for parsing if this looks like NMEA data
       if (isNmea) {
-        // Emit the binary data for parsing using both bluetooth-specific and device-generic events
-        this.eventEmitter.emit('bluetooth:data', data);
-        this.eventEmitter.emit('device:data', data);
+        // Use standardized events from constants - emit only device:data for consistency
+        // This helps consolidate event handling in the GnssModule
+        this.eventEmitter.emit(EVENTS.DATA_RECEIVED, data);
       }
     } catch (error) {
       this.logger.error('Error handling incoming data:', error);
