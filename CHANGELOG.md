@@ -1,3 +1,10 @@
+## [1.3.3](https://github.com/BrandonLewis/gnss.js/compare/v1.3.2...v1.3.3) (2025-05-09)
+
+
+### Bug Fixes
+
+* refactor BluetoothHandler and settings to use constants for UUIDs and improve event handling ([038bf5f](https://github.com/BrandonLewis/gnss.js/commit/038bf5f492e320b62b444164daa8aef32d672c82))
+
 ## [1.3.2](https://github.com/BrandonLewis/gnss.js/compare/v1.3.1...v1.3.2) (2025-05-09)
 
 
