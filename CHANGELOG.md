@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/BrandonLewis/gnss.js/compare/v1.3.3...v1.4.0) (2025-05-09)
+
+
+### Features
+
+* centralize constants for Bluetooth services and characteristics in GNSS.js ([304e5d2](https://github.com/BrandonLewis/gnss.js/commit/304e5d26ae6afab4f586ddab768a02540c35498e))
+
 ## [1.3.3](https://github.com/BrandonLewis/gnss.js/compare/v1.3.2...v1.3.3) (2025-05-09)
 
 
