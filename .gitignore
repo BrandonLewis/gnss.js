@@ -2,12 +2,6 @@
 node_modules/
 jspm_packages/
 
-# Distribution directory
-dist/
-
-# Docs
-docs/
-
 # Coverage directory
 coverage/
 
