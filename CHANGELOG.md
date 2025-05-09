@@ -1,3 +1,10 @@
+## [1.3.2](https://github.com/BrandonLewis/gnss.js/compare/v1.3.1...v1.3.2) (2025-05-09)
+
+
+### Bug Fixes
+
+* refactor requestOptions to handle filters and acceptAllDevices correctly ([5f32a04](https://github.com/BrandonLewis/gnss.js/commit/5f32a04ea76c106c1e15da1cd028c0da458372a6))
+
 ## [1.3.1](https://github.com/BrandonLewis/gnss.js/compare/v1.3.0...v1.3.1) (2025-05-09)
 
 
