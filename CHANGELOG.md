@@ -1,3 +1,11 @@
+# [1.7.0](https://github.com/BrandonLewis/gnss.js/compare/v1.6.0...v1.7.0) (2025-05-09)
+
+
+### Features
+
+* enhance semantic release configuration and update dependencies ([4121f69](https://github.com/BrandonLewis/gnss.js/commit/4121f69842d9d2497dc87d20d09a303bd898e742))
+* enhance semantic release configuration and update dependencies ([262c550](https://github.com/BrandonLewis/gnss.js/commit/262c55083956555faebd8dfe508f5fc572eae860))
+
 # [1.6.0](https://github.com/BrandonLewis/gnss.js/compare/v1.5.0...v1.6.0) (2025-05-09)
 
 
