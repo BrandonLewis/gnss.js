@@ -1,3 +1,10 @@
+## [1.2.3](https://github.com/BrandonLewis/gnss.js/compare/v1.2.2...v1.2.3) (2025-05-09)
+
+
+### Bug Fixes
+
+* update npm publish access and package name for scoped package ([50408ea](https://github.com/BrandonLewis/gnss.js/commit/50408ea634e4002a7fbb6c9ba0d45acf1369bba2))
+
 ## [1.2.2](https://github.com/BrandonLewis/gnss.js/compare/v1.2.1...v1.2.2) (2025-05-09)
 
 
