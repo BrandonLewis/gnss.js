@@ -1,3 +1,15 @@
+# [1.3.0](https://github.com/BrandonLewis/gnss.js/compare/v1.2.10...v1.3.0) (2025-05-09)
+
+
+### Bug Fixes
+
+* remove unnecessary entries from .gitignore ([3bca13f](https://github.com/BrandonLewis/gnss.js/commit/3bca13fe3fffbae96187b8cef25e386991c4a065))
+
+
+### Features
+
+* update semantic-release to build and deploy CDN files directly ([fbcbac1](https://github.com/BrandonLewis/gnss.js/commit/fbcbac1a13ff90842d98324ee7d8daf0ea20312f))
+
 ## [1.2.10](https://github.com/BrandonLewis/gnss.js/compare/v1.2.9...v1.2.10) (2025-05-09)
 
 
