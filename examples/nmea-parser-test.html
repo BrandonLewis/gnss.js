@@ -131,7 +131,7 @@
   </div>
   
   <script type="module">
-    import { NmeaParser } from '../src/nmea-parser.js';
+    import { NmeaParser, NMEA_TYPES } from '../dist/gnss.esm.js';
     
     // DOM elements
     const nmeaInput = document.getElementById('nmea-input');
@@ -252,7 +252,7 @@
         
         // Add type-specific info
         switch (result.type) {
-          case 'GGA':
+          case NMEA_TYPES.GGA:
             html += `<div>Time: ${result.time}</div>`;
             html += `<div>Position: ${result.latitude ? result.latitude.toFixed(6) : 'N/A'}° ${result.latitude >= 0 ? 'N' : 'S'}, ${result.longitude ? result.longitude.toFixed(6) : 'N/A'}° ${result.longitude >= 0 ? 'E' : 'W'}</div>`;
             html += `<div>Altitude: ${result.altitude ? result.altitude.toFixed(2) + 'm' : 'N/A'}</div>`;
@@ -261,7 +261,7 @@
             html += `<div>HDOP: ${result.hdop}</div>`;
             break;
             
-          case 'GSA':
+          case NMEA_TYPES.GSA:
             html += `<div>Mode: ${result.mode === 'A' ? 'Automatic' : 'Manual'}</div>`;
             html += `<div>Fix Type: ${getFixType(result.fixType)}</div>`;
             html += `<div>Satellites Used: ${result.satellites.join(', ')}</div>`;
@@ -270,7 +270,7 @@
             html += `<div>VDOP: ${result.vdop}</div>`;
             break;
             
-          case 'GSV':
+          case NMEA_TYPES.GSV:
             html += `<div>Message: ${result.messageNumber} of ${result.totalMessages}</div>`;
             html += `<div>Satellites in View: ${result.satellitesInView}</div>`;
             html += `<div>Satellites in this message: ${result.satellites.length}</div>`;
@@ -292,7 +292,7 @@
             }
             break;
             
-          case 'RMC':
+          case NMEA_TYPES.RMC:
             html += `<div>Time: ${result.time}</div>`;
             html += `<div>Date: ${result.date}</div>`;
             html += `<div>Status: ${result.status === 'A' ? 'Active' : 'Void'}</div>`;
@@ -303,7 +303,7 @@
             html += `<div>Mode: ${result.mode || 'N/A'}</div>`;
             break;
             
-          case 'GST':
+          case NMEA_TYPES.GST:
             html += `<div>Time: ${result.time}</div>`;
             html += `<div>RMS: ${result.rms.toFixed(3)}</div>`;
             html += `<div>Semi-Major Error: ${result.semiMajorError.toFixed(3)}</div>`;
@@ -314,7 +314,7 @@
             html += `<div>Height Error: ${result.heightError.toFixed(3)}</div>`;
             break;
             
-          case 'VTG':
+          case NMEA_TYPES.VTG:
             html += `<div>Course (True): ${result.courseTrue !== null ? result.courseTrue.toFixed(2) + '°' : 'N/A'}</div>`;
             html += `<div>Course (Magnetic): ${result.courseMagnetic !== null ? result.courseMagnetic.toFixed(2) + '°' : 'N/A'}</div>`;
             html += `<div>Speed (Knots): ${result.speedKnots !== null ? result.speedKnots.toFixed(2) + ' knots' : 'N/A'}</div>`;

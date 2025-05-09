@@ -164,7 +164,7 @@
   </div>
   
   <script type="module">
-    import { GnssModule, DeviceSettings, RtkSettings, RtkStatus } from '../dist/gnss.esm.js';
+    import { GnssModule, DeviceSettings, RtkSettings, RtkStatus, EVENTS } from '../dist/gnss.esm.js';
     
     // UI Elements
     const statusEl = document.getElementById('status');
@@ -282,8 +282,8 @@
     
     apiSupportEl.innerHTML = html;
     
-    // Set up event listeners
-    gnss.on('connection:connected', (data) => {
+    // Set up event listeners using standardized event constants
+    gnss.on(EVENTS.CONNECTED, (data) => {
       updateStatus(`Connected via ${data.method}`, 'connected');
       disconnectBtn.disabled = false;
       connectBluetoothBtn.disabled = true;
@@ -300,7 +300,7 @@
       logMessage(`Connected to device via ${data.method}`, 'success');
     });
     
-    gnss.on('connection:disconnected', () => {
+    gnss.on(EVENTS.DISCONNECTED, () => {
       updateStatus('Disconnected', 'disconnected');
       disconnectBtn.disabled = true;
       connectBluetoothBtn.disabled = false;
@@ -310,29 +310,25 @@
       logMessage('Disconnected from device', 'info');
     });
     
-    gnss.on('connection:error', (data) => {
+    gnss.on(EVENTS.CONNECTION_ERROR, (data) => {
       updateStatus(`Error: ${data.message}`, 'error');
       logMessage(`Connection error: ${data.message}`, 'error');
     });
     
-    gnss.on('device:settings:update', (settings) => {
+    gnss.on(EVENTS.SETTINGS_CHANGED, (settings) => {
       logMessage(`Device settings updated: ${settings.name || 'Unnamed device'}`, 'info');
     });
     
-    gnss.on('device:configuring', (data) => {
+    gnss.on(EVENTS.DEVICE_CONFIGURING, (data) => {
       logMessage(`Configuring device with settings: ${JSON.stringify(data.settings)}`, 'info');
     });
     
-    gnss.on('device:configured', (data) => {
+    gnss.on(EVENTS.DEVICE_CONFIGURED, (data) => {
       if (data.success) {
         logMessage(`Device configuration successful!`, 'success');
       } else {
         logMessage(`Device configuration failed: ${data.message || 'Unknown error'}`, 'error');
       }
-    });
-    
-    gnss.on('device:error', (data) => {
-      logMessage(`Device error: ${data.message}`, 'error');
     });
     
     // Button event handlers

@@ -217,7 +217,7 @@
   </div>
   
   <script type="module">
-    import { GnssModule } from '../dist/gnss.esm.js';
+    import { GnssModule, EVENTS, BLE_SERVICES } from '../dist/gnss.esm.js';
     
     // UI Elements
     const statusEl = document.getElementById('status');
@@ -250,20 +250,9 @@
     
     // Detect Bluetooth API
     if ('bluetooth' in navigator) {
-      // Check for specific functions
       const hasRequestDevice = typeof navigator.bluetooth.requestDevice === 'function';
       if (hasRequestDevice) {
         html += '<div style="color: green">✓ Web Bluetooth API is supported</div>';
-        
-        // Add a direct test button that bypasses our library completely
-        html += `
-          <button id="directBluetoothTest" style="margin-top: 5px; background-color: #2196F3;">
-            Test Bluetooth Dialog Directly
-          </button>
-        `;
-        
-        // Note: We're skipping the permissions check as 'bluetooth' is not consistently 
-        // supported as a valid permission name across browsers
       } else {
         html += '<div style="color: orange">⚠️ Web Bluetooth API partially supported (missing methods)</div>';
       }
@@ -317,8 +306,10 @@
       }
     });
     
-    // Set up event listeners
-    gnss.on('position', (position) => {
+    // Set up event listeners using standardized event names
+    gnss.on(EVENTS.POSITION_UPDATE, (position) => {
+      logMessage(`Position updated: ${position.latitude.toFixed(6)},${position.longitude.toFixed(6)}`, 'info');
+      
       positionEl.innerHTML = `
         <div>
           <strong>Latitude:</strong> ${position.latitude.toFixed(6)}° ${position.latitude >= 0 ? 'N' : 'S'}
@@ -348,18 +339,15 @@
           <strong>Timestamp:</strong> ${position.timestamp.toLocaleTimeString()}
         </div>
       `;
-      
-      logMessage(`Position updated: ${position.latitude.toFixed(6)},${position.longitude.toFixed(6)}`, 'info');
     });
     
-    gnss.on('satellites', (satellites) => {
+    gnss.on(EVENTS.SATELLITES_UPDATE, (satellites) => {
       if (!satellites || satellites.length === 0) {
         satellitesEl.innerHTML = '<tr><td colspan="6">No satellite data available</td></tr>';
         return;
       }
       
       let html = '';
-      
       satellites.forEach(sat => {
         const system = getGnssSystem(sat.prn);
         html += `
@@ -378,7 +366,7 @@
       logMessage(`Satellites updated: ${satellites.length} satellites in view`, 'info');
     });
     
-    gnss.on('connection:connected', (data) => {
+    gnss.on(EVENTS.CONNECTED, (data) => {
       updateStatus(`Connected via ${data.method}`, 'connected');
       disconnectBtn.disabled = false;
       connectBluetoothBtn.disabled = true;
@@ -396,7 +384,7 @@
       logMessage(`Connected to device via ${data.method}`, 'success');
     });
     
-    gnss.on('connection:disconnected', () => {
+    gnss.on(EVENTS.DISCONNECTED, () => {
       updateStatus('Disconnected', 'disconnected');
       disconnectBtn.disabled = true;
       connectBluetoothBtn.disabled = false;
@@ -407,12 +395,12 @@
       logMessage('Disconnected from device', 'info');
     });
     
-    gnss.on('connection:error', (data) => {
+    gnss.on(EVENTS.CONNECTION_ERROR, (data) => {
       updateStatus(`Error: ${data.message}`, 'error');
       logMessage(`Connection error: ${data.message}`, 'error');
     });
     
-    gnss.on('ntrip:connected', (data) => {
+    gnss.on(EVENTS.NTRIP_CONNECTED, (data) => {
       updateNtripStatus(`Connected to ${data.mountpoint}`, 'connected');
       disconnectNtripBtn.disabled = false;
       connectNtripBtn.disabled = true;
@@ -420,7 +408,7 @@
       logMessage(`Connected to NTRIP mountpoint: ${data.mountpoint}`, 'success');
     });
     
-    gnss.on('ntrip:disconnected', () => {
+    gnss.on(EVENTS.NTRIP_DISCONNECTED, () => {
       updateNtripStatus('Disconnected', 'disconnected');
       disconnectNtripBtn.disabled = true;
       connectNtripBtn.disabled = false;
@@ -428,13 +416,9 @@
       logMessage('Disconnected from NTRIP', 'info');
     });
     
-    gnss.on('ntrip:error', (data) => {
+    gnss.on(EVENTS.NTRIP_ERROR, (data) => {
       updateNtripStatus(`Error: ${data.message}`, 'error');
       logMessage(`NTRIP error: ${data.message}`, 'error');
-    });
-    
-    gnss.on('ntrip:data', () => {
-      // You can update a counter here if you want to show RTCM message reception
     });
     
     // GNSS helper functions
@@ -484,52 +468,20 @@
     
     // Button event handlers
     connectBluetoothBtn.addEventListener('click', async () => {
-      logMessage('Button clicked - testing direct Bluetooth API', 'info');
-      
-      // DIRECT TEST: Try calling navigator.bluetooth.requestDevice directly from the click handler
       try {
-        logMessage('Directly calling navigator.bluetooth.requestDevice()', 'info');
-        
-        // This is the most minimal call possible
-        const device = await navigator.bluetooth.requestDevice({
-          acceptAllDevices: true,
-        });
-        
-        logMessage(`Direct test succeeded! Selected: ${device.name || device.id}`, 'success');
-        
-        // Now try the actual connection with the device we already selected
-        logMessage(`Connecting to selected device: ${device.name || device.id}...`, 'info');
+        logMessage('Connecting via Bluetooth...', 'info');
         updateStatus('Connecting...', 'disconnected');
         
-        // WARNING: This bypasses our standard flow by passing the device directly to the connection manager
-        try {
-          const success = await gnss.connectDevice({
-            method: 'bluetooth',
-            deviceObj: device // Pass the selected device directly
-          });
-          
-          if (success) {
-            logMessage(`Successfully connected to ${device.name || device.id}`, 'success');
-          } else {
-            logMessage('Device connection failed after device was selected', 'error');
-            updateStatus('Connection failed', 'error');
-          }
-        } catch (connError) {
-          logMessage(`Connection error: ${connError.message}`, 'error');
-          updateStatus('Connection error', 'error');
-        }
-      } catch (directError) {
-        // Handle error from direct test
-        logMessage(`⚠️ DIRECT TEST FAILED: ${directError.message}`, 'error');
+        // Use the official connectBluetooth method which handles the device selection
+        const success = await gnss.connectBluetooth();
         
-        if (directError.name === 'NotFoundError') {
-          logMessage('User canceled the selection dialog', 'info');
-        } else {
-          logMessage(`Error type: ${directError.name}`, 'error');
-          console.error('Direct Bluetooth API error:', directError);
+        if (!success) {
+          logMessage('Failed to connect via Bluetooth', 'error');
+          updateStatus('Connection failed', 'error');
         }
-        
-        updateStatus(`Error: ${directError.message}`, 'error');
+      } catch (error) {
+        logMessage(`Error connecting via Bluetooth: ${error.message}`, 'error');
+        updateStatus(`Error: ${error.message}`, 'error');
       }
     });
     
@@ -615,57 +567,6 @@
         logMessage(`Error disconnecting from NTRIP: ${error.message}`, 'error');
       }
     });
-    
-    // Add event listener for direct Bluetooth test
-    const directBluetoothTestBtn = document.getElementById('directBluetoothTest');
-    if (directBluetoothTestBtn) {
-      directBluetoothTestBtn.addEventListener('click', async () => {
-        try {
-          logMessage('Running direct Bluetooth API test...', 'info');
-          const device = await navigator.bluetooth.requestDevice({
-            acceptAllDevices: true,
-            // Include some common services we might need
-            optionalServices: [
-              '6e400001-b5a3-f393-e0a9-e50e24dcca9e', // Nordic UART Service
-              '0000ffe0-0000-1000-8000-00805f9b34fb', // Nordic UART Service (alternate)
-              '00001800-0000-1000-8000-00805f9b34fb', // Generic Access
-              '00001801-0000-1000-8000-00805f9b34fb', // Generic Attribute
-            ]
-          });
-          logMessage(`Direct test succeeded! Selected device: ${device.name || device.id}`, 'success');
-          
-          // Ask user if they want to connect to this device
-          if (confirm(`Do you want to connect to the selected device: ${device.name || device.id}?`)) {
-            logMessage('Connecting to selected device...', 'info');
-            updateStatus('Connecting...', 'disconnected');
-            
-            try {
-              const success = await gnss.connectDevice({
-                method: 'bluetooth',
-                deviceObj: device
-              });
-              
-              if (success) {
-                logMessage(`Successfully connected to ${device.name || device.id}`, 'success');
-              } else {
-                logMessage('Connection failed after device selection', 'error');
-                updateStatus('Connection failed', 'error');
-              }
-            } catch (connError) {
-              logMessage(`Connection error: ${connError.message}`, 'error');
-              updateStatus(`Connection error: ${connError.message}`, 'error');
-            }
-          }
-        } catch (error) {
-          if (error.name === 'NotFoundError') {
-            logMessage('Dialog was shown but user canceled', 'info');
-          } else {
-            logMessage(`Error: ${error.message} (${error.name})`, 'error');
-            console.error('Direct test error:', error);
-          }
-        }
-      });
-    }
     
     // Log startup
     logMessage('gnss.js Basic Usage Example initialized', 'info');
