@@ -1,3 +1,10 @@
+## [1.2.6](https://github.com/BrandonLewis/gnss.js/compare/v1.2.5...v1.2.6) (2025-05-09)
+
+
+### Bug Fixes
+
+* improve CDN deployment with file copy verification ([54f533f](https://github.com/BrandonLewis/gnss.js/commit/54f533f039abe8a06235fec362ca0c2b72096bd5))
+
 ## [1.2.5](https://github.com/BrandonLewis/gnss.js/compare/v1.2.4...v1.2.5) (2025-05-09)
 
 
