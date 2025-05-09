@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/BrandonLewis/gnss.js/compare/v1.5.0...v1.6.0) (2025-05-09)
+
+
+### Features
+
+* update event names to use public API standards in GNSS module ([9145fc8](https://github.com/BrandonLewis/gnss.js/commit/9145fc825c5b43a7d66280189affec40362c9312))
+
 # [1.5.0](https://github.com/BrandonLewis/gnss.js/compare/v1.4.0...v1.5.0) (2025-05-09)
 
 
