@@ -48,6 +48,14 @@ jobs:
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           git fetch
+
+          # Stash or discard changes before switching branches
+          if ! git diff --quiet; then
+            echo "Stashing uncommitted changes..."
+            git stash
+          fi
+
+          # Check if the cdn-dist branch exists
           if ! git ls-remote --heads origin cdn-dist | grep -q 'cdn-dist'; then
             git checkout --orphan cdn-dist
             git rm -rf .
