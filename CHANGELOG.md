@@ -1,3 +1,13 @@
+# [1.5.0](https://github.com/BrandonLewis/gnss.js/compare/v1.4.0...v1.5.0) (2025-05-09)
+
+
+### Features
+
+* centralize constants for Bluetooth services and characteristics in GNSS.js ([7a82666](https://github.com/BrandonLewis/gnss.js/commit/7a826660420b0c8f7ca0efb75d60ff25c4f62fde))
+* centralize constants for Bluetooth services and characteristics in GNSS.js ([d536c60](https://github.com/BrandonLewis/gnss.js/commit/d536c60df7e6bf2485bedfb9f91c7940fd2f2841))
+* centralize constants for Bluetooth services and characteristics in GNSS.js ([dc7a75a](https://github.com/BrandonLewis/gnss.js/commit/dc7a75aa99e598883170e79392f69b9231991967))
+* update event names to use public API standards in GNSS module ([be911f5](https://github.com/BrandonLewis/gnss.js/commit/be911f5cbffa30865ec83eddd683d605aefeea4f))
+
 # [1.4.0](https://github.com/BrandonLewis/gnss.js/compare/v1.3.3...v1.4.0) (2025-05-09)
 
 
