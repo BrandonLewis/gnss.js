@@ -1,6 +1,6 @@
 {
   "name": "@brandonlewis/gnss.js",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "JavaScript module for GNSS device connections, NMEA parsing, and NTRIP client functionality",
   "main": "dist/gnss.js",
   "module": "dist/gnss.esm.js",
