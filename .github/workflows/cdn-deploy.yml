@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*'  # Run on any tag that starts with 'v'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to deploy (leave empty for latest)'
+        required: false
+        default: ''
 
 jobs:
   build-and-deploy:
@@ -11,6 +17,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history and tags
         
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -29,6 +37,12 @@ jobs:
           npm install clean-jsdoc-theme
           npm run docs
         
+      - name: Debug
+        run: |
+          echo "Current ref: ${{ github.ref }}"
+          echo "Current tag: ${{ github.ref_name }}"
+          git tag -l "v*"
+          
       - name: Create CDN branch if not exists
         run: |
           git config --global user.name "GitHub Actions"
