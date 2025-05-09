@@ -70,18 +70,30 @@ jobs:
         
       - name: Copy dist and docs files to cdn-dist branch
         run: |
+          # Debug file sizes before copying
+          echo "Original dist files:"
+          du -sh dist/*
+          
           # Save the dist and docs directories
           mkdir -p /tmp/dist /tmp/docs
-          cp -r dist/* /tmp/dist/
-          cp -r docs/* /tmp/docs/
+          cp -rv dist/* /tmp/dist/
+          cp -rv docs/* /tmp/docs/
+          
+          # Verify temp file sizes
+          echo "Temp dist files:"
+          du -sh /tmp/dist/*
           
           # Clear existing files but keep .git directory
           find . -mindepth 1 -not -path "./.git*" -delete
           
           # Copy dist and docs directories back
           mkdir -p dist docs
-          cp -r /tmp/dist/* dist/
-          cp -r /tmp/docs/* docs/
+          cp -rv /tmp/dist/* dist/
+          cp -rv /tmp/docs/* docs/
+          
+          # Verify copied file sizes
+          echo "Final dist files:"
+          du -sh dist/*
           
           # Add and commit changes
           git add dist docs
