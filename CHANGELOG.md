@@ -1,3 +1,10 @@
+## [1.2.9](https://github.com/BrandonLewis/gnss.js/compare/v1.2.8...v1.2.9) (2025-05-09)
+
+
+### Bug Fixes
+
+* remove unnecessary entries from .gitignore ([165fba6](https://github.com/BrandonLewis/gnss.js/commit/165fba6f0ff5279107274333219133caccf22f95))
+
 ## [1.2.8](https://github.com/BrandonLewis/gnss.js/compare/v1.2.7...v1.2.8) (2025-05-09)
 
 
