@@ -3,7 +3,7 @@ node_modules/
 jspm_packages/
 
 # Distribution directory
-dist/
+/dist/
 
 # Docs
 docs/
