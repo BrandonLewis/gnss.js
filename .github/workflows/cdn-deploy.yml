@@ -2,8 +2,9 @@ name: CDN Deployment
 
 on:
   push:
-    tags:
-      - 'v*'  # Run on any tag that starts with 'v'
+    branches:
+      - main
+      - cdn-dist
   workflow_dispatch:
     inputs:
       tag:
@@ -19,91 +20,47 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Fetch all history and tags
-        
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: 'npm'
-          
+
       - name: Install dependencies
         run: npm ci
-        
+
       - name: Build
         run: npm run build
-        
+
       - name: Generate docs
         run: |
           npm install clean-jsdoc-theme
           npm run docs
-        
-      - name: Debug
-        run: |
-          echo "Current ref: ${{ github.ref }}"
-          echo "Current tag: ${{ github.ref_name }}"
-          git tag -l "v*"
-          
-      - name: Create CDN branch if not exists
+
+      - name: Sync cdn-dist with main
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          git fetch
+          git fetch origin main
+          git checkout -B cdn-dist origin/main
+          git push -u origin cdn-dist
 
-          # Stash or discard changes before switching branches
-          if ! git diff --quiet; then
-            echo "Stashing uncommitted changes..."
-            git stash
-          fi
-
-          # Check if the cdn-dist branch exists
-          if ! git ls-remote --heads origin cdn-dist | grep -q 'cdn-dist'; then
-            git checkout --orphan cdn-dist
-            git rm -rf .
-            mkdir -p dist
-            touch dist/.gitkeep
-            git add dist/.gitkeep
-            git commit -m "Initial CDN branch"
-            git push origin cdn-dist
-          else
-            git checkout cdn-dist
-          fi
-        
       - name: Copy dist and docs files to cdn-dist branch
         run: |
-          # Debug file sizes before copying
-          echo "Original dist files:"
-          du -sh dist/*
-          
-          # Save the dist and docs directories
           mkdir -p /tmp/dist /tmp/docs
           cp -rv dist/* /tmp/dist/
           cp -rv docs/* /tmp/docs/
-          
-          # Verify temp file sizes
-          echo "Temp dist files:"
-          du -sh /tmp/dist/*
-          
-          # Clear existing files but keep .git directory
           find . -mindepth 1 -not -path "./.git*" -delete
-          
-          # Copy dist and docs directories back
           mkdir -p dist docs
           cp -rv /tmp/dist/* dist/
           cp -rv /tmp/docs/* docs/
-          
-          # Verify copied file sizes
-          echo "Final dist files:"
-          du -sh dist/*
-          
-          # Add and commit changes if there are any
+
+      - name: Commit and push updates
+        run: |
           git add dist docs
-          
-          if git diff --cached --quiet; then
-            echo "No changes detected in dist or docs. Skipping commit."
-          else
-            git commit -m "Update CDN files and docs for tag ${{ github.ref_name }}"
-            git push origin cdn-dist
-          fi
+          git commit -m "Rebuild CDN files and docs for tag ${{ github.ref_name }}" || echo "No changes to commit."
+          git push origin cdn-dist
 
       - name: Update latest tag
         run: |
