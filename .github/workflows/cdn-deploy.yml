@@ -38,28 +38,22 @@ jobs:
           npm install clean-jsdoc-theme
           npm run docs
 
+      # Sync cdn-dist with main
       - name: Sync cdn-dist with main
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           git fetch origin main
-          git checkout -B cdn-dist origin/main
-          git push -u origin cdn-dist
+          git fetch origin cdn-dist
+          git checkout -B cdn-dist origin/cdn-dist
+          git merge origin/main || echo "Already up to date with main" 
 
-      - name: Copy dist and docs files to cdn-dist branch
-        run: |
-          mkdir -p /tmp/dist /tmp/docs
-          cp -rv dist/* /tmp/dist/
-          cp -rv docs/* /tmp/docs/
-          find . -mindepth 1 -not -path "./.git*" -delete
-          mkdir -p dist docs
-          cp -rv /tmp/dist/* dist/
-          cp -rv /tmp/docs/* docs/
-
+      # Commit and push updates
       - name: Commit and push updates
         run: |
           git add dist docs
           git commit -m "Rebuild CDN files and docs for tag ${{ github.ref_name }}" || echo "No changes to commit."
+          git pull --rebase origin cdn-dist  # Ensure we have the latest changes
           git push origin cdn-dist
 
       - name: Update latest tag
