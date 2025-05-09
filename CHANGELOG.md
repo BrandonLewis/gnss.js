@@ -1,3 +1,15 @@
+# [1.2.0](https://github.com/BrandonLewis/gnss.js/compare/v1.1.0...v1.2.0) (2025-05-09)
+
+
+### Bug Fixes
+
+* update package name and publishing workflow ([306964c](https://github.com/BrandonLewis/gnss.js/commit/306964c24549cd47088d5768905a6411f5666d49))
+
+
+### Features
+
+* add device settings configuration and event handling in GNSS module ([981cdd2](https://github.com/BrandonLewis/gnss.js/commit/981cdd22a96f2a66a13cfb0f1a1cf07da67763ba))
+
 # [1.1.0](https://github.com/BrandonLewis/gnss.js/compare/v1.0.1...v1.1.0) (2025-05-08)
 
 
