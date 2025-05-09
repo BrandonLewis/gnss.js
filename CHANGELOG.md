@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/BrandonLewis/gnss.js/compare/v1.3.0...v1.3.1) (2025-05-09)
+
+
+### Bug Fixes
+
+* update filters option to use null instead of empty array ([4d4f991](https://github.com/BrandonLewis/gnss.js/commit/4d4f9916acbb079de78d16555c9bd4bd90345c97))
+
 # [1.3.0](https://github.com/BrandonLewis/gnss.js/compare/v1.2.10...v1.3.0) (2025-05-09)
 
 
