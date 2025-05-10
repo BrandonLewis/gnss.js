@@ -11,7 +11,8 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "rollup -c",
+    "clean": "rimraf dist",
+    "build": "npm run clean && rollup -c",
     "dev": "rollup -c -w",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint 'src/**/*.js'",
