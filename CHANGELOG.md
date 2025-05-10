@@ -1,3 +1,12 @@
+## [1.7.1](https://github.com/BrandonLewis/gnss.js/compare/v1.7.0...v1.7.1) (2025-05-10)
+
+
+### Bug Fixes
+
+* correct syntax in release configuration and improve build script ([57320b6](https://github.com/BrandonLewis/gnss.js/commit/57320b66cce8e245a10c8e16e135426ef2a9a501))
+* correct syntax in release configuration and improve build script ([a39da25](https://github.com/BrandonLewis/gnss.js/commit/a39da2532dba9d4a98a56462ff4ebefa633aa760))
+* correct syntax in release configuration and improve build script ([5739c40](https://github.com/BrandonLewis/gnss.js/commit/5739c4095287e4c84044e0c1207928af13113a03))
+
 # [1.7.0](https://github.com/BrandonLewis/gnss.js/compare/v1.6.0...v1.7.0) (2025-05-09)
 
 

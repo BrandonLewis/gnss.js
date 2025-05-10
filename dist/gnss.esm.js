@@ -1,5 +1,5 @@
 /**
- * @brandon7lewis/gnss.js v1.6.0
+ * @brandon7lewis/gnss.js v1.7.0
  * JavaScript module for GNSS device connections, NMEA parsing, and NTRIP client functionality
  * https://github.com/BrandonLewis/gnss.js#readme
  * 
