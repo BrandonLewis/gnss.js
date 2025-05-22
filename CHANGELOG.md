@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/BrandonLewis/gnss.js/compare/v1.7.1...v1.8.0) (2025-05-22)
+
+
+### Features
+
+* update rover settings to increase message rate and add altitude/antenna offsets ([3915146](https://github.com/BrandonLewis/gnss.js/commit/391514608837dd8843b8049c259ac00e30ea439b))
+
 ## [1.7.1](https://github.com/BrandonLewis/gnss.js/compare/v1.7.0...v1.7.1) (2025-05-10)
 
 

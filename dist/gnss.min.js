@@ -1,5 +1,5 @@
 /**
- * @brandon7lewis/gnss.js v1.7.0
+ * @brandon7lewis/gnss.js v1.7.1
  * JavaScript module for GNSS device connections, NMEA parsing, and NTRIP client functionality
  * https://github.com/BrandonLewis/gnss.js#readme
  * 
@@ -2495,8 +2495,10 @@
         
         // Rover settings
         rover: {
-          messageRate: 1, // Hz
+          messageRate: 4, // Hz
           dynamicModel: 'pedestrian', // automotive, pedestrian, etc.
+          altitudeOffset: 0, // meters for altitude correction when using pole or tripod
+          antennaOffset: 0, // meters for antenna offset (this is specific to the device used)
         }
       };
       
@@ -2718,8 +2720,10 @@
         },
         
         rover: {
-          messageRate: 1,
+          messageRate: 4,
           dynamicModel: 'pedestrian',
+          altitudeOffset: 0,
+          antennaOffset: 0,
         }
       };
       
